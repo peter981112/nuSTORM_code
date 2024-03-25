@@ -584,7 +584,7 @@ void hist_2d_prod_w_weight()
   leg_pi_mom->SetFillStyle(0);
 
   THStack *stk_recoil_theta = new THStack;
-  TLegend *leg_recoil_theta = new TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend *leg_recoil_theta = new TLegend(0.13, 0.5, 0.33,0.9);
   leg_recoil_theta->SetFillStyle(0);
   
   THStack *stk_recoil_mom = new THStack;
@@ -612,7 +612,7 @@ void hist_2d_prod_w_weight()
   leg_dphit->SetFillStyle(0);
  
   THStack *stk_dalphat = new THStack;
-  TLegend *leg_dalphat = new TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend *leg_dalphat = new TLegend(0.13, 0.5, 0.33,0.9);
   leg_dalphat->SetFillStyle(0);
  
  
@@ -978,24 +978,48 @@ void hist_2d_prod_w_weight()
   TString chi2_name_lst[] = {"scattertheta", "scattermomentum", "recoiltheta", "recoilmomentum", 
     "neutronmomentum", "dpt", "dphit", "dalphat"};
 
+  TString leghead = "GIBUU", leghead_ori = "GIBUU";
   if(anaid == 1)
   {
     chi2_scattertheta = GetChi2_stack(stk_mu_theta, hh_0pi_scattertheta, 
       hh_0pi_scattertheta_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_scattertheta, hh_0pi_scattertheta->GetNbinsX()-1);
+    leg_mu_theta->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_scattermomentum = GetChi2_stack(stk_mu_mom, hh_0pi_scattermomentum, 
-      hh_0pi_scattermomentum_cov, noff, dummyunit);;
+      hh_0pi_scattermomentum_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_scattermomentum, hh_0pi_scattermomentum->GetNbinsX()-1);
+    leg_mu_mom->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_recoiltheta = GetChi2_stack(stk_recoil_theta, hh_0pi_recoiltheta, 
       hh_0pi_recoiltheta_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_recoiltheta, hh_0pi_recoiltheta->GetNbinsX()-1);
+    leg_recoil_theta->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_recoilmomentum = GetChi2_stack(stk_recoil_mom, hh_0pi_recoilmomentum, 
       hh_0pi_recoilmomentum_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_recoilmomentum, hh_0pi_recoilmomentum->GetNbinsX()-1);
+    leg_recoil_mom->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_neutronmomentum = GetChi2_stack(stk_neutron_mom, hh_0pi_neutronmomentum, 
-      hh_0pi_neutronmomentum_cov, noff, dummyunit);  
+      hh_0pi_neutronmomentum_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_neutronmomentum, hh_0pi_neutronmomentum->GetNbinsX()-1);
+    leg_neutron_mom->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_dpt = GetChi2_stack(stk_dpt, hh_0pi_dpt, 
       hh_0pi_dpt_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dpt, hh_0pi_dpt->GetNbinsX()-1);
+    leg_dpt->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_dphit = GetChi2_stack(stk_dphit, hh_0pi_dphit, 
       hh_0pi_dphit_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dphit, hh_0pi_dphit->GetNbinsX()-1);
+    leg_dphit->SetHeader(leghead);
+    leghead = leghead_ori;
     chi2_dalphat = GetChi2_stack(stk_dalphat, hh_0pi_dalphat, 
       hh_0pi_dalphat_cov, noff, dummyunit);
+    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dalphat, hh_0pi_dalphat->GetNbinsX()-1);
+    leg_dalphat->SetHeader(leghead);
     //cout<<"chi2 - "<<chi2_scattertheta<<" chi2 - "<<chi2_dalphat<<endl;
   }
   else
@@ -1047,6 +1071,7 @@ void hist_2d_prod_w_weight()
 
   if(anaid == 1)
   {
+    hh_0pi_scattertheta->SetAxisRange(0,3.0e-40,"Y");
     hh_0pi_scattertheta->Draw(opt_err_bar);
     hh_0pi_scattertheta->SetTitle("#theta of #mu of 4 event modes");
     stk_mu_theta->Draw(opt_same);
