@@ -126,8 +126,12 @@ double GetChi2_stack(THStack *sim_stack, TH1D * data_hist,
   chi2 = style::GetChi2(data_hist, *rawcov, 
       noff, data_hist->GetNbinsX()-1, sum_hist, dummyunit);
 
-  if(fabs(chi2)>1000){chi2 = style::GetChi2(data_hist, *rawcov, 
+  if(fabs(chi2)>500){chi2 = style::GetChi2(data_hist, *rawcov, 
       noff, data_hist->GetNbinsX()-2, sum_hist, dummyunit);}
+
+  else if(fabs(chi2)>500){chi2 = style::GetChi2(data_hist, *rawcov, 
+      noff, data_hist->GetNbinsX(), sum_hist, dummyunit);}
+
   cout<<"chi2 : "<<chi2<<" for "<<data_hist->GetTitle()<<endl;
   return chi2;
 }
@@ -144,6 +148,8 @@ void hist_2d_prod_w_weight()
   //int noff{1};
   //cout<<"plotting outana7 - case with pi 0"<<endl;
   //auto anatag{"outana7"};
+
+  int nodata = 1; //nodata 1 makes sure no data is polotted on the canvas
 
   TString fn1{"PhysRevD.101.092001.root"}; //getMINERvA0PI
   TString fn2{"PIZEROTKI_MINERvA.root"};  //getMINERvAPIZERO
@@ -631,6 +637,7 @@ void hist_2d_prod_w_weight()
     leg_mu_theta->AddEntry(hh_0pi_scattertheta,"Data total","fl");
     leg_recoil_mom->AddEntry(hh_0pi_recoilmomentum,"Data total","fl");
     leg_recoil_theta->AddEntry(hh_0pi_recoiltheta,"Data total","fl");
+    leg_neutron_mom->AddEntry(hh_0pi_neutronmomentum,"Data total","fl");
     leg_dpt->AddEntry(hh_0pi_dpt,"Data total","fl");
     leg_dphit->AddEntry(hh_0pi_dphit,"Data total","fl");
     leg_dalphat->AddEntry(hh_0pi_dalphat,"Data total","fl");
@@ -983,42 +990,42 @@ void hist_2d_prod_w_weight()
   {
     chi2_scattertheta = GetChi2_stack(stk_mu_theta, hh_0pi_scattertheta, 
       hh_0pi_scattertheta_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_scattertheta, hh_0pi_scattertheta->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattertheta, hh_0pi_scattertheta->GetNbinsX()-1);
     leg_mu_theta->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_scattermomentum = GetChi2_stack(stk_mu_mom, hh_0pi_scattermomentum, 
       hh_0pi_scattermomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_scattermomentum, hh_0pi_scattermomentum->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattermomentum, hh_0pi_scattermomentum->GetNbinsX()-1);
     leg_mu_mom->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_recoiltheta = GetChi2_stack(stk_recoil_theta, hh_0pi_recoiltheta, 
       hh_0pi_recoiltheta_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_recoiltheta, hh_0pi_recoiltheta->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoiltheta, hh_0pi_recoiltheta->GetNbinsX()-1);
     leg_recoil_theta->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_recoilmomentum = GetChi2_stack(stk_recoil_mom, hh_0pi_recoilmomentum, 
       hh_0pi_recoilmomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_recoilmomentum, hh_0pi_recoilmomentum->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoilmomentum, hh_0pi_recoilmomentum->GetNbinsX()-1);
     leg_recoil_mom->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_neutronmomentum = GetChi2_stack(stk_neutron_mom, hh_0pi_neutronmomentum, 
       hh_0pi_neutronmomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_neutronmomentum, hh_0pi_neutronmomentum->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_neutronmomentum, hh_0pi_neutronmomentum->GetNbinsX()-1);
     leg_neutron_mom->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_dpt = GetChi2_stack(stk_dpt, hh_0pi_dpt, 
       hh_0pi_dpt_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dpt, hh_0pi_dpt->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dpt, hh_0pi_dpt->GetNbinsX()-1);
     leg_dpt->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_dphit = GetChi2_stack(stk_dphit, hh_0pi_dphit, 
       hh_0pi_dphit_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dphit, hh_0pi_dphit->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dphit, hh_0pi_dphit->GetNbinsX()-1);
     leg_dphit->SetHeader(leghead);
     leghead = leghead_ori;
     chi2_dalphat = GetChi2_stack(stk_dalphat, hh_0pi_dalphat, 
       hh_0pi_dalphat_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}=%.0f/%i", chi2_dalphat, hh_0pi_dalphat->GetNbinsX()-1);
+    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dalphat, hh_0pi_dalphat->GetNbinsX()-1);
     leg_dalphat->SetHeader(leghead);
     //cout<<"chi2 - "<<chi2_scattertheta<<" chi2 - "<<chi2_dalphat<<endl;
   }
@@ -1034,6 +1041,7 @@ void hist_2d_prod_w_weight()
 
   const TString opt_same="same hist";
   const TString opt_err_bar="X1 E0";
+  const TString opt_err_bar_same="same X1 E0";
   const TString opt_nostack="hist nostack";
 
   stk_x->Draw(opt_nostack);
@@ -1069,12 +1077,14 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","W of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "W of 4 event modes"));
 
-  if(anaid == 1)
+  if(nodata == 1){stk_mu_theta->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_scattertheta->SetAxisRange(0,3.0e-40,"Y");
     hh_0pi_scattertheta->Draw(opt_err_bar);
     hh_0pi_scattertheta->SetTitle("#theta of #mu of 4 event modes");
     stk_mu_theta->Draw(opt_same);
+    hh_0pi_scattertheta->Draw(opt_err_bar_same);
   }
   else{stk_mu_theta->Draw(opt_nostack);}
   stk_mu_theta->GetXaxis()->SetTitle("#theta of #mu(degree)");
@@ -1087,11 +1097,13 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","#theta of #mu of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "#theta of #mu of 4 event modes"));
 
-  if(anaid == 1)
+  if(nodata == 1){stk_mu_mom->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_scattermomentum->Draw(opt_err_bar);
     hh_0pi_scattermomentum->SetTitle("momentum of #mu of 4 event modes");
     stk_mu_mom->Draw(opt_same);
+    hh_0pi_scattermomentum->Draw(opt_err_bar_same);
   }
   else{stk_mu_mom->Draw(opt_nostack);}
   stk_mu_mom->GetXaxis()->SetTitle("momentum of #mu(GeV)");
@@ -1126,11 +1138,13 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","momentum of #pi of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "momentum of #pi of 4 event modes"));
 
-  if(anaid == 1)
+  if(nodata == 1){stk_recoil_theta->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_recoiltheta->Draw(opt_err_bar);
     hh_0pi_recoiltheta->SetTitle("#theta of recoil of 4 event modes");
     stk_recoil_theta->Draw(opt_same);
+    hh_0pi_recoiltheta->Draw(opt_err_bar_same);
   }
   else{stk_recoil_theta->Draw(opt_nostack);}
   stk_recoil_theta->GetXaxis()->SetTitle("#theta of recoil(degree)");
@@ -1143,11 +1157,13 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","#theta of recoil of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "#theta of recoil of 4 event modes"));
 
-  if(anaid == 1)
+  if(nodata == 1){stk_recoil_mom->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_recoilmomentum->Draw(opt_err_bar);
     hh_0pi_recoilmomentum->SetTitle("momentum of recoil of 4 event modes");
     stk_recoil_mom->Draw(opt_same);
+    hh_0pi_recoilmomentum->Draw(opt_err_bar_same);
   }
   else{stk_recoil_mom->Draw(opt_nostack);}
   stk_recoil_mom->GetXaxis()->SetTitle("momentum of recoil(GeV)");
@@ -1182,11 +1198,13 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","momentum of baryon of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "momentum of baryon of 4 event modes"));
   
-  if(anaid == 1)
+  if(nodata == 1){stk_neutron_mom->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_neutronmomentum->Draw(opt_err_bar);
     hh_0pi_neutronmomentum->SetTitle("p_{n} of 4 event modes");
     stk_neutron_mom->Draw(opt_same);
+    hh_0pi_neutronmomentum->Draw(opt_err_bar_same);
   }
   else{stk_neutron_mom->Draw(opt_nostack);}
   stk_neutron_mom->GetXaxis()->SetTitle("p_{n}(GeV)");
@@ -1195,15 +1213,17 @@ void hist_2d_prod_w_weight()
   gStyle->SetTitleX(0.5);
   gStyle->SetPadRightMargin(0.1);
   gStyle->SetPadLeftMargin(0.1);
-  leg_baryon_mom->Draw();
+  leg_neutron_mom->Draw();
   c1->Print("plot.pdf","p_{n} of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "p_{n} of 4 event modes"));
   
-  if(anaid == 1)
+  if(nodata == 1){stk_dpt->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_dpt->Draw(opt_err_bar);
     hh_0pi_dpt->SetTitle("dpt of 4 event modes");
     stk_dpt->Draw(opt_same);
+    hh_0pi_dpt->Draw(opt_err_bar_same);
   }
   else{  stk_dpt->Draw(opt_nostack);}
   stk_dpt->GetXaxis()->SetTitle("dpt(GeV)");
@@ -1216,11 +1236,13 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","dpt of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "dpt of 4 event modes"));
 
-  if(anaid == 1)
+  if(nodata == 1){stk_dphit->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_dphit->Draw(opt_err_bar);
     hh_0pi_dphit->SetTitle("dphit of 4 event modes");
     stk_dphit->Draw(opt_same);
+    hh_0pi_dphit->Draw(opt_err_bar_same);
   }
   else{stk_dphit->Draw(opt_nostack);}
   stk_dphit->GetXaxis()->SetTitle("dphit(degree)");
@@ -1233,17 +1255,21 @@ void hist_2d_prod_w_weight()
   c1->Print("plot.pdf","dphit of 4 event modes");
   c1->Print(Form("png/%s_%s.png", anatag, "dphit of 4 event modes"));
   
-  if(anaid == 1)
+  
+  if(nodata == 1){stk_dalphat->Draw(opt_nostack);}
+  else if(anaid == 1)
   {
     hh_0pi_dalphat->Draw(opt_err_bar);
     hh_0pi_dalphat->SetTitle("dalphat of 4 event modes");
     stk_dalphat->Draw(opt_same);
+    hh_0pi_dalphat->Draw(opt_err_bar_same);
   }
   else
   {
     hh_pi_dalphat->Draw(opt_err_bar);
     hh_pi_dalphat->SetTitle("dalphat of 4 event modes");
     stk_dalphat->Draw(opt_same);
+    hh_pi_dalphat->Draw(opt_err_bar_same);
   }
   stk_dalphat->GetXaxis()->SetTitle("dalphat(degree)");
   stk_dalphat->GetYaxis()->SetTitle("#frac{d#sigma}{d dalphat}(cm^{2}/GeV/nucleon)");
