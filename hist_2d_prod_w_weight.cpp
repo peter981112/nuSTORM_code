@@ -149,7 +149,8 @@ void hist_2d_prod_w_weight()
   //cout<<"plotting outana7 - case with pi 0"<<endl;
   //auto anatag{"outana7"};
 
-  int nodata = 1; //nodata 1 makes sure no data is polotted on the canvas
+  int nodata{0}; //nodata 1 makes sure no data is polotted on the canvas if 0 with data
+  nodata = 1;
 
   TString fn1{"PhysRevD.101.092001.root"}; //getMINERvA0PI
   TString fn2{"PIZEROTKI_MINERvA.root"};  //getMINERvAPIZERO
@@ -986,59 +987,61 @@ void hist_2d_prod_w_weight()
     "neutronmomentum", "dpt", "dphit", "dalphat"};
 
   TString leghead = "GIBUU", leghead_ori = "GIBUU";
-  if(anaid == 1)
+  if(nodata == 0)
   {
-    chi2_scattertheta = GetChi2_stack(stk_mu_theta, hh_0pi_scattertheta, 
-      hh_0pi_scattertheta_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattertheta, hh_0pi_scattertheta->GetNbinsX()-1);
-    leg_mu_theta->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_scattermomentum = GetChi2_stack(stk_mu_mom, hh_0pi_scattermomentum, 
-      hh_0pi_scattermomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattermomentum, hh_0pi_scattermomentum->GetNbinsX()-1);
-    leg_mu_mom->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_recoiltheta = GetChi2_stack(stk_recoil_theta, hh_0pi_recoiltheta, 
-      hh_0pi_recoiltheta_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoiltheta, hh_0pi_recoiltheta->GetNbinsX()-1);
-    leg_recoil_theta->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_recoilmomentum = GetChi2_stack(stk_recoil_mom, hh_0pi_recoilmomentum, 
-      hh_0pi_recoilmomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoilmomentum, hh_0pi_recoilmomentum->GetNbinsX()-1);
-    leg_recoil_mom->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_neutronmomentum = GetChi2_stack(stk_neutron_mom, hh_0pi_neutronmomentum, 
-      hh_0pi_neutronmomentum_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_neutronmomentum, hh_0pi_neutronmomentum->GetNbinsX()-1);
-    leg_neutron_mom->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_dpt = GetChi2_stack(stk_dpt, hh_0pi_dpt, 
-      hh_0pi_dpt_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dpt, hh_0pi_dpt->GetNbinsX()-1);
-    leg_dpt->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_dphit = GetChi2_stack(stk_dphit, hh_0pi_dphit, 
-      hh_0pi_dphit_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dphit, hh_0pi_dphit->GetNbinsX()-1);
-    leg_dphit->SetHeader(leghead);
-    leghead = leghead_ori;
-    chi2_dalphat = GetChi2_stack(stk_dalphat, hh_0pi_dalphat, 
-      hh_0pi_dalphat_cov, noff, dummyunit);
-    leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dalphat, hh_0pi_dalphat->GetNbinsX()-1);
-    leg_dalphat->SetHeader(leghead);
-    //cout<<"chi2 - "<<chi2_scattertheta<<" chi2 - "<<chi2_dalphat<<endl;
-  }
-  else
-  {
-    chi2_dalphat = GetChi2_stack(stk_dalphat, hh_pi_dalphat, 
-      hh_pi_dalphat_cov, noff, dummyunit);
-  }
+    if(anaid == 1)
+    {
+      chi2_scattertheta = GetChi2_stack(stk_mu_theta, hh_0pi_scattertheta, 
+        hh_0pi_scattertheta_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattertheta, hh_0pi_scattertheta->GetNbinsX()-1);
+      leg_mu_theta->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_scattermomentum = GetChi2_stack(stk_mu_mom, hh_0pi_scattermomentum, 
+        hh_0pi_scattermomentum_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_scattermomentum, hh_0pi_scattermomentum->GetNbinsX()-1);
+      leg_mu_mom->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_recoiltheta = GetChi2_stack(stk_recoil_theta, hh_0pi_recoiltheta, 
+        hh_0pi_recoiltheta_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoiltheta, hh_0pi_recoiltheta->GetNbinsX()-1);
+      leg_recoil_theta->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_recoilmomentum = GetChi2_stack(stk_recoil_mom, hh_0pi_recoilmomentum, 
+        hh_0pi_recoilmomentum_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_recoilmomentum, hh_0pi_recoilmomentum->GetNbinsX()-1);
+      leg_recoil_mom->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_neutronmomentum = GetChi2_stack(stk_neutron_mom, hh_0pi_neutronmomentum, 
+        hh_0pi_neutronmomentum_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_neutronmomentum, hh_0pi_neutronmomentum->GetNbinsX()-1);
+      leg_neutron_mom->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_dpt = GetChi2_stack(stk_dpt, hh_0pi_dpt, 
+        hh_0pi_dpt_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dpt, hh_0pi_dpt->GetNbinsX()-1);
+      leg_dpt->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_dphit = GetChi2_stack(stk_dphit, hh_0pi_dphit, 
+        hh_0pi_dphit_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dphit, hh_0pi_dphit->GetNbinsX()-1);
+      leg_dphit->SetHeader(leghead);
+      leghead = leghead_ori;
+      chi2_dalphat = GetChi2_stack(stk_dalphat, hh_0pi_dalphat, 
+        hh_0pi_dalphat_cov, noff, dummyunit);
+      leghead += Form("  #chi^{2}/ndf=%.0f/%i", chi2_dalphat, hh_0pi_dalphat->GetNbinsX()-1);
+      leg_dalphat->SetHeader(leghead);
+      //cout<<"chi2 - "<<chi2_scattertheta<<" chi2 - "<<chi2_dalphat<<endl;
+    }
+    else
+    {
+      chi2_dalphat = GetChi2_stack(stk_dalphat, hh_pi_dalphat, 
+        hh_pi_dalphat_cov, noff, dummyunit);
+    }
 
-  double chi2_lst[] = {chi2_scattertheta, chi2_scattermomentum, chi2_recoiltheta, chi2_recoilmomentum, 
-    chi2_neutronmomentum, chi2_dpt, chi2_dphit, chi2_dalphat};
-  for(int ii=0; ii<8; ii++){cout<<"chi2 of "<<chi2_name_lst[ii]<<" : "<<chi2_lst[ii]<<endl;}
-
+    double chi2_lst[] = {chi2_scattertheta, chi2_scattermomentum, chi2_recoiltheta, chi2_recoilmomentum, 
+      chi2_neutronmomentum, chi2_dpt, chi2_dphit, chi2_dalphat};
+    for(int ii=0; ii<8; ii++){cout<<"chi2 of "<<chi2_name_lst[ii]<<" : "<<chi2_lst[ii]<<endl;}
+  }
   const TString opt_same="same hist";
   const TString opt_err_bar="X1 E0";
   const TString opt_err_bar_same="same X1 E0";
