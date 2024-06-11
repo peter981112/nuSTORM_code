@@ -15,7 +15,6 @@
 #include "TString.h"
 #include "TStyle.h"
 #include "TSystem.h"
-#include "TAxis.h"
 #include "TTree.h"
 
 #include <iostream>
@@ -93,41 +92,129 @@ void diff_xsec(TH1D* &hist, const double histnormFactor) //makes all bin content
   return;
 }
 
-void hist_nuSTORM_musig_GiBUU_sim()
+double GetChi2_stack(THStack *sim_stack, TH1D * data_hist, 
+  const TMatrixD *rawcov, const int noff, const double dummyunit)
 {
-  
-  TString fn_lst[] = {"E3_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E4_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root",
-    "E5_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E6_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E7_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root"};
+  double chi2{0};
+  cout<<"stack pointer : "<<sim_stack<<endl;
+  TList * hist_lst = sim_stack->GetHists();
+  TAxis * axis = data_hist->GetXaxis();
+  //cout<<"print axis N bin : "<<axis->GetNbins()<<" axis min : "<<
+  //axis->GetXmin()<<" axis x max : "<<axis->GetXmax()<<endl;
+  TH1D * sum_hist = new TH1D(*(TH1D*) hist_lst->At(0));
+  wipe_hist(sum_hist);
+
+  TIter next(hist_lst);
+	TObject* object = 0;
+	while ((object = next()))
+  {
+    sum_hist->Add((TH1D*)object,1);
+  }
+
+/*
+  TCanvas *c1 = new TCanvas("c","",800,600);
+  data_hist->Draw("X1 E1");
+  data_hist->SetTitle("test sum hist");
+  sum_hist->Draw("same, hist");
+  sum_hist->GetXaxis()->SetTitle("x");
+  sum_hist->GetYaxis()->SetTitle("y-#sigma");
+  gStyle->SetTitleX(0.5);
+  gStyle->SetPadRightMargin(0.1);
+  gStyle->SetPadLeftMargin(0.1);
+  c1->Print(Form("png/%s_%s.png", data_hist->GetTitle(), "test sum hist"));
+*/
+  chi2 = style::GetChi2(data_hist, *rawcov, 
+      noff, data_hist->GetNbinsX()-1, sum_hist, dummyunit);
+
+  if(fabs(chi2)>500){chi2 = style::GetChi2(data_hist, *rawcov, 
+      noff, data_hist->GetNbinsX()-2, sum_hist, dummyunit);}
+
+  else if(fabs(chi2)>500){chi2 = style::GetChi2(data_hist, *rawcov, 
+      noff, data_hist->GetNbinsX(), sum_hist, dummyunit);}
+
+  cout<<"chi2 : "<<chi2<<" for "<<data_hist->GetTitle()<<endl;
+  return chi2;
+}
+
+void hist_2d_prod_no_data()
+{
+/*
+  TString fn{"outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
   int anaid{1};
   int noff{2};
   auto anatag{"outana9"};
   cout<<"plotting outana9 - case with no pi 0"<<endl;
-  /*
-  TString fn_lst[] = {"E3_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E4_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", 
-    "E5_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E6_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E7_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root"};
+  */
+  TString fn{"outAna7_MINERvALE_GiBUU_test_GFSPIZEROa7nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
   int anaid{2};
   int noff{1};
-  auto anatag{"outana7"};
   cout<<"plotting outana7 - case with pi 0"<<endl;
-  */
+  auto anatag{"outana7"};
   
-  const Int_t n_E = sizeof(fn_lst)/sizeof(TString);
-  const double dummyunit = 1E-42; //data
-  TCanvas *c1 = new TCanvas("c","",800,600);
+  
+  TFile *f = new TFile(fn);
   TFile *fout = new TFile("tmpplot.root","recreate");
+  TTree *t1 = (TTree*) f->Get("tree");
+  TCanvas *c1 = new TCanvas("c","",800,600);
   c1->Print("plot.pdf[");
 
   TString nuExp;
   int nuPDG, tarA;
-  double histnormFactor_lst[n_E];
+  const TString gen = GeneratorUtils::SetEnv(fn, nuExp, nuPDG, tarA);
+  const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*13;//Scaling to per nucleon in CH 13=1+12
   
-  const TString E_modes[]={"E3","E4","E5","E6","E7"};
+  const TString modes[]={"_all","_qe","_res","_dis","_2p2h", "_other"};
+  const int pdsmin[]={0,     1, 2, 3, 4, 5};
+  const int pdsmax[]={10000, 1, 2, 3, 4, 5};
+  const Int_t nmode = sizeof(modes)/sizeof(TString);
+
+  ULong64_t minnp, maxnp;
+  const bool isTopoTask = GeneratorUtils::SetTopoCut(anaid, minnp, maxnp);
+
+  const TString npiDecomp[]={"","_0pi","_1pi","_Mpi","_other"};
+  //only gointo sub-category for TopoTask
+  const int nNpiCut = isTopoTask? (sizeof(npiDecomp)/sizeof(TString)) : 1;
+  cout<<"n pi cut : "<<nNpiCut<<endl;
+
+  TList *lout=new TList;
+  TLegend *leg = new TLegend(0.65, 0.45, 0.85, 0.85);
+  leg->SetFillStyle(0);
+  //leg->SetBorderSize(0);
+  leg->SetTextFont(42);
+  leg->SetTextSize(0.023);
+  gStyle-> SetOptStat(0); // turn off stat box
+  gStyle->SetPadRightMargin(0.2);
+  gStyle->SetPadLeftMargin(0.1);
+  gStyle-> SetPalette(kRainbow);
+  Double_t xBj, Q2, Wtrue, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
+    recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT;
+  Int_t prod,evtMode;
+  t1->SetBranchAddress("xBj",&xBj);
+  t1->SetBranchAddress("Q2",&Q2);
+  t1->SetBranchAddress("Wtrue",&Wtrue);
+  t1->SetBranchAddress("scattertheta",&scattertheta);
+  t1->SetBranchAddress("scattermomentum",&scattermomentum);
+  t1->SetBranchAddress("mesontheta",&mesontheta);
+  t1->SetBranchAddress("mesonmomentum",&mesonmomentum);
+  t1->SetBranchAddress("recoiltheta",&recoiltheta);
+  t1->SetBranchAddress("recoilmomentum",&recoilmomentum);
+  t1->SetBranchAddress("baryontheta",&baryontheta);
+  t1->SetBranchAddress("baryonmomentum",&baryonmomentum);
+  t1->SetBranchAddress("IApN",&IApN); //p_n
+  t1->SetBranchAddress("dpt",&dpt);
+  t1->SetBranchAddress("dphit",&dphit);
+  t1->SetBranchAddress("dalphat",&dalphat);
+  t1->SetBranchAddress("dpTT",&dpTT);
+  t1->SetBranchAddress("prod",&prod);
+  t1->SetBranchAddress("evtMode",&evtMode);
+  t1->SetBranchAddress("perweight",&perweight);
+  
+  TString E_modes[]={"QE","RES","DIS","2p2h"};
   TString var[] = {"x", "Q2", "W", "scattertheta", "scattermomentum", 
       "mesontheta", "mesonmomentum", "recoiltheta", "recoilmomentum", "baryontheta", "baryonmomentum",
       "neutronmomentum", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
-  const int pdsmin[]={0,     1, 2, 3, 4, 5};
-  const int pdsmax[]={10000, 1, 2, 3, 4, 5};
-  const Int_t nmode = sizeof(E_modes)/sizeof(TString);
+  //const Int_t nmode = sizeof(E_modes)/sizeof(TString);
+  const Int_t n_E = sizeof(E_modes)/sizeof(TString);
 
   TString temp_name = "";
   TString temp_tit = "";
@@ -138,12 +225,12 @@ void hist_nuSTORM_musig_GiBUU_sim()
   {
     if(i%2 == 0)
     {
-      temp_name = temp_name+"hxQ2_"+ E_modes[i/2];
-      temp_tit = temp_tit+"x-Q^{2}_for "+ E_modes[i/2];
+      temp_name = temp_name+"hxQ2 "+ E_modes[i/2];
+      temp_tit = temp_tit+"x-Q^{2} for "+ E_modes[i/2];
     }
     else
     {
-      temp_name = temp_name+"hxW_"+ E_modes[i/2];
+      temp_name = temp_name+"hxW "+ E_modes[i/2];
       temp_tit = temp_tit+"x-W_for "+ E_modes[i/2];
     }
     hh2d_name_lst[i] = temp_name;
@@ -158,8 +245,8 @@ void hist_nuSTORM_musig_GiBUU_sim()
   TString hh1d_tit_lst[3*n_E];
   for(int i=0; i<3*n_E; i++)
   {
-    temp_name = temp_name+"hxQ2_"+var[i%3]+ E_modes[i/3];
-    temp_tit = temp_tit+var[i%3]+"_for_"+ E_modes[i/3];
+    temp_name = temp_name+"hxQ2 "+var[i%3]+ E_modes[i/3];
+    temp_tit = temp_tit+var[i%3]+" for "+ E_modes[i/3];
 
     hh1d_name_lst[i] = temp_name;
     hh1d_tit_lst[i] = temp_tit;
@@ -185,141 +272,151 @@ void hist_nuSTORM_musig_GiBUU_sim()
     temp_tit = "";
   }
 
-  const int nh1d = sizeof(hh1d)/sizeof(TH1D*);
-  const int nh1d_mom = sizeof(hh1d_mom)/sizeof(TH1D*);
-  cout<<"mom array len : "<<nh1d_mom<<endl;
-  const int nh2d = sizeof(hh2d)/sizeof(TH2D*);
-
-  const Int_t cols[]={kRed-3, kBlue, kGreen+3, kOrange, kViolet+3};
+  const int nh2d_temp = 2;
+  const int nh1d_temp = 3;//sizeof(hh1d_temp)/sizeof(TH1D*);
+  const int nh1d_mom_temp = 12;//sizeof(hh1d_mom_temp)/sizeof(TH1D*);
 
   for(Int_t kk=0; kk<n_E; kk++)
   {
-    TString fn{fn_lst[kk]};
-    TFile *f = new TFile(fn);
-    TTree *t1 = (TTree*) f->Get("tree");
-    ULong64_t minnp, maxnp;
-    const bool isTopoTask = GeneratorUtils::SetTopoCut(anaid, minnp, maxnp);
 
-    const TString npiDecomp[]={"","_0pi","_1pi","_Mpi","_other"};
-    //only gointo sub-category for TopoTask
-    const int nNpiCut = isTopoTask? (sizeof(npiDecomp)/sizeof(TString)) : 1;
-    cout<<"n pi cut : "<<nNpiCut<<endl;
-    const TString gen = GeneratorUtils::SetEnv(fn_lst[kk], nuExp, nuPDG, tarA);
-    double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*13;//Scaling to per nucleon in CH 13=1+12
-    histnormFactor_lst[kk] = histnormFactor;
-
-    TList *lout=new TList;
-    TLegend *leg = new TLegend(0.65, 0.45, 0.85, 0.85);
-    leg->SetFillStyle(0);
-    //leg->SetBorderSize(0);
-    leg->SetTextFont(42);
-    leg->SetTextSize(0.023);
-    gStyle-> SetOptStat(0); // turn off stat box
-    gStyle->SetPadRightMargin(0.2);
-    gStyle->SetPadLeftMargin(0.1);
-    gStyle-> SetPalette(kRainbow);
-    Double_t xBj, Q2, Wtrue, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
-      recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT;
-    Int_t prod,evtMode;
-    t1->SetBranchAddress("xBj",&xBj);
-    t1->SetBranchAddress("Q2",&Q2);
-    t1->SetBranchAddress("Wtrue",&Wtrue);
-    t1->SetBranchAddress("scattertheta",&scattertheta);
-    t1->SetBranchAddress("scattermomentum",&scattermomentum);
-    t1->SetBranchAddress("mesontheta",&mesontheta);
-    t1->SetBranchAddress("mesonmomentum",&mesonmomentum);
-    t1->SetBranchAddress("recoiltheta",&recoiltheta);
-    t1->SetBranchAddress("recoilmomentum",&recoilmomentum);
-    t1->SetBranchAddress("baryontheta",&baryontheta);
-    t1->SetBranchAddress("baryonmomentum",&baryonmomentum);
-    t1->SetBranchAddress("IApN",&IApN); //p_n
-    t1->SetBranchAddress("dpt",&dpt);
-    t1->SetBranchAddress("dphit",&dphit);
-    t1->SetBranchAddress("dalphat",&dalphat);
-    t1->SetBranchAddress("dpTT",&dpTT);
-    t1->SetBranchAddress("prod",&prod);
-    t1->SetBranchAddress("evtMode",&evtMode);
-    t1->SetBranchAddress("perweight",&perweight);
-
-    cout<<"init hist in process"<<endl;
-
-    //TH2D *h_weight__scattertheta = new TH2D("h_weight_E_scattertheta","distribution of weight and scattertheta mode : E",80,0,26,100,0.0000001,0.001);
-
-    hh2d[kk*2] = new TH2D(hh2d_name_lst[kk*2],hh2d_tit_lst[kk*2],60,0,2,80,0.1,10);
-    hh2d[kk*2+1] = new TH2D(hh2d_name_lst[kk*2+1],hh2d_tit_lst[kk*2+1],60,0,2,80,0.6,3);
-    const int nh1d_temp = 3;//sizeof(hh1d_temp)/sizeof(TH1D*);
-    const int nh1d_mom_temp = 12;//sizeof(hh1d_mom_temp)/sizeof(TH1D*);
+    Double_t hh2d_hist_x_upper_bound[] = {2,1,1,2};
+    
+    hh2d[kk*2] = new TH2D(hh2d_name_lst[kk*2],hh2d_tit_lst[kk*2],60,0,hh2d_hist_x_upper_bound[kk],80,0.1,10);
+    hh2d[kk*2+1] = new TH2D(hh2d_name_lst[kk*2+1],hh2d_tit_lst[kk*2+1],60,0,hh2d_hist_x_upper_bound[kk],80,0.6,3);
+    
+    /*
+    variables
+    "x", "Q2", "W",
     Double_t hh1d_hist_lower_bound[] = {0,0,0.5};
     Double_t hh1d_hist_upper_bound[] = {2,4,3.5};
-    for(Int_t ii=0; ii<nh1d_temp; ii++)
-    {
-      hh1d[kk*nh1d_temp+ii] = new TH1D(hh1d_name_lst[kk*3+ii],hh1d_tit_lst[kk*3+ii],30,hh1d_hist_lower_bound[ii],hh1d_hist_upper_bound[ii]);
-    }
+
+    "scattertheta", "scattermomentum", "mesontheta", "mesonmomentum", "recoiltheta", "recoilmomentum", "baryontheta", "baryonmomentum",
+    "neutronmomentum", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
     Double_t hh1d_mom_hist_lower_bound[] = {0,1,0,0,0,0,0,0,0,0,0,0};
     Double_t hh1d_mom_hist_upper_bound[] = {26,5.5,180,3.5,180,4.5,180,5,2,2.5,180,180};
+    */
+
+    Double_t hh1d_hist_lower_bound[] = {0,0,0.5};
+    Double_t hh1d_hist_upper_bound[] = {2.5,12,12};
+    for(Int_t ii=0; ii<nh1d_temp; ii++)
+    {
+      hh1d[kk*nh1d_temp+ii] = new TH1D(hh1d_name_lst[kk*3+ii],hh1d_tit_lst[kk*3+ii],60,hh1d_hist_lower_bound[ii],hh1d_hist_upper_bound[ii]);   
+    }
+    Double_t hh1d_mom_hist_lower_bound[] = {0,1,0,0,0,0,0,0,0,0,0,0};
+    Double_t hh1d_mom_hist_upper_bound[] = {180,15,180,15,180,15,180,15,12,12.5,180,180};
+    
     for(Int_t ii=0; ii<nh1d_mom_temp; ii++)
     {
-      hh1d_mom[kk*nh1d_mom_temp+ii] = new TH1D(hh1d_mom_name_lst[kk*12+ii],hh1d_mom_tit_lst[kk*12+ii],30,hh1d_mom_hist_lower_bound[ii],hh1d_mom_hist_upper_bound[ii]);
+      hh1d_mom[kk*nh1d_mom_temp+ii] = new TH1D(hh1d_mom_name_lst[kk*12+ii],hh1d_mom_tit_lst[kk*12+ii],60,hh1d_mom_hist_lower_bound[ii],hh1d_mom_hist_upper_bound[ii]);
     }
-    /*
-    hh2d[kk*2] = hxQ2;
-    hh2d[kk*2+1] = hxW;
-    const int nh1d_temp = sizeof(hh1d_temp)/sizeof(TH1D*);
-    const int nh1d_mom_temp = sizeof(hh1d_mom_temp)/sizeof(TH1D*);
-    
-    TH2D *hxQ2 = new TH2D(hh2d_name_lst[kk*2],hh2d_tit_lst[kk*2],60,0,2,80,0.1,10);
-    TH2D *hxW = new TH2D(hh2d_name_lst[kk*2+1],hh2d_tit_lst[kk*2+1],60,0,2,80,0.6,3);
+  }
 
-    TH1D *hxQ2_x = new TH1D(hh1d_name_lst[kk*3],hh1d_tit_lst[kk*3],60,0,2);
-    TH1D *hxQ2_Q2 = new TH1D(hh1d_name_lst[kk*3+1],hh1d_tit_lst[kk*3+1],60,0,4);
-    TH1D *hxQ2_W = new TH1D(hh1d_name_lst[kk*3+2],hh1d_tit_lst[kk*3+2],60,0.5,3.5);
+  TString tit[]={"evtMode QE x_{Bj}-Q^{2}", "evtMode QE x_{Bj}-W","QE x_{Bj}", "QE Q^{2}(GeV^{2})", "QE W(GeV)"
+  , "evtMode RES x_{Bj}-Q^{2}", "evtMode RES x_{Bj}-W","RES x_{Bj}", "RES Q^{2}(GeV^{2})", "RES W(GeV)"
+  , "evtMode DIS x_{Bj}-Q^{2}", "evtMode DIS x_{Bj}-W","DIS x_{Bj}", "DIS Q^{2}(GeV^{2})", "DIS W(GeV)"
+  , "evtMode 2p2h x_{Bj}-Q^{2}","evtMode 2p2h x_{Bj}-W","2p2h x_{Bj}", "2p2h Q^{2}(GeV^{2})", "2p2h W(GeV)"};
+  const Int_t cols[]={kRed-3, kBlue, kGreen+3, kOrange};
+  string mode[] = {"QE", "RES", "DIS", "2p2h"};
 
+  TH2D *h_weight_QE_scattertheta = new TH2D("h_weight_QE_scattertheta","distribution of weight and scattertheta mode : QE",80,0,86,100,0.0000001,0.001);
 
-    TH1D *hxQ2_scattertheta = new TH1D(hh1d_mom_name_lst[kk*12],hh1d_mom_tit_lst[kk*12],60,0,26); //muon theta
-    TH1D *hxQ2_scattermomentum = new TH1D(hh1d_mom_name_lst[kk*12+1],hh1d_mom_tit_lst[kk*12+1],60,1,5.5);
-    TH1D *hxQ2_mesontheta = new TH1D(hh1d_mom_name_lst[kk*12+2],hh1d_mom_tit_lst[kk*12+2],60,0,180); //pion theta
-    TH1D *hxQ2_mesonmomentum = new TH1D(hh1d_mom_name_lst[kk*12+3],hh1d_mom_tit_lst[kk*12+3],60,0,3.5);
-    TH1D *hxQ2_recoiltheta = new TH1D(hh1d_mom_name_lst[kk*12+4],hh1d_mom_tit_lst[kk*12+4],60,0,180); //proton theta
-    TH1D *hxQ2_recoilmomentum = new TH1D(hh1d_mom_name_lst[kk*12+5],hh1d_mom_tit_lst[kk*12+5],60,0,4.5);
-    TH1D *hxQ2_baryontheta = new TH1D(hh1d_mom_name_lst[kk*12+6],hh1d_mom_tit_lst[kk*12+6],60,0,180); //proton+pion theta
-    TH1D *hxQ2_baryonmomentum = new TH1D(hh1d_mom_name_lst[kk*12+7],hh1d_mom_tit_lst[kk*12+7],60,0,5);
-    TH1D *hxQ2_neutronmomentum = new TH1D(hh1d_mom_name_lst[kk*12+8],hh1d_mom_tit_lst[kk*12+8],60,0,2);
-    TH1D *hxQ2_dpt = new TH1D(hh1d_mom_name_lst[kk*12+9],hh1d_mom_tit_lst[kk*12+9],60,0,2.5);
-    TH1D *hxQ2_dphit = new TH1D(hh1d_mom_name_lst[kk*12+10],hh1d_mom_tit_lst[kk*12+10],60,0,180);
-    TH1D *hxQ2_dalphat = new TH1D(hh1d_mom_name_lst[kk*12+11],hh1d_mom_tit_lst[kk*12+11],60,0,180);
-
-    TH1D *hh1d_temp[] = {hxQ2_x, hxQ2_Q2, hxQ2_W};
-    TH1D *hh1d_mom_temp[] = {hxQ2_scattertheta, hxQ2_scattermomentum, hxQ2_mesontheta, hxQ2_mesonmomentum, hxQ2_recoiltheta, hxQ2_recoilmomentum, hxQ2_baryontheta, hxQ2_baryonmomentum,
-      hxQ2_neutronmomentum, hxQ2_dpt, hxQ2_dphit, hxQ2_dalphat};
-    */
-    string mode[] = {"QE", "RES", "DIS", "2p2h"};
+  THStack *stk_x = new THStack;
+  TLegend *leg_x = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_x->SetFillStyle(0);
   
+  THStack *stk_Q2 = new THStack;
+  TLegend *leg_Q2 = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_Q2->SetFillStyle(0);
   
-    Int_t nentries = (Int_t)t1->GetEntries();
-    cout<<"events for energy "<<E_modes[kk]<<" : "<<nentries<<endl;
-    int npi_err{0};
-    for (Int_t i=0; i<nentries; i++)
+  THStack *stk_W = new THStack;
+  TLegend *leg_W = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_W->SetFillStyle(0);
+  
+  THStack *stk_mu_theta = new THStack;
+  TLegend *leg_mu_theta = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_mu_theta->SetFillStyle(0);
+  
+  THStack *stk_mu_mom = new THStack;
+  TLegend *leg_mu_mom = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_mu_mom->SetFillStyle(0);
+
+  THStack *stk_pi_theta = new THStack;
+  TLegend *leg_pi_theta = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_pi_theta->SetFillStyle(0);
+  
+  THStack *stk_pi_mom = new THStack;
+  TLegend *leg_pi_mom = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_pi_mom->SetFillStyle(0);
+
+  THStack *stk_recoil_theta = new THStack;
+  TLegend *leg_recoil_theta = new TLegend(0.13, 0.5, 0.33,0.9);
+  leg_recoil_theta->SetFillStyle(0);
+  
+  THStack *stk_recoil_mom = new THStack;
+  TLegend *leg_recoil_mom = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_recoil_mom->SetFillStyle(0);
+
+  THStack *stk_baryon_theta = new THStack;
+  TLegend *leg_baryon_theta = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_baryon_theta->SetFillStyle(0);
+  
+  THStack *stk_baryon_mom = new THStack;
+  TLegend *leg_baryon_mom = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_baryon_mom->SetFillStyle(0);
+
+  THStack *stk_neutron_mom = new THStack;
+  TLegend *leg_neutron_mom = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_neutron_mom->SetFillStyle(0);
+ 
+  THStack *stk_dpt = new THStack;
+  TLegend *leg_dpt = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_dpt->SetFillStyle(0);
+
+  THStack *stk_dphit = new THStack;
+  TLegend *leg_dphit = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_dphit->SetFillStyle(0);
+ 
+  THStack *stk_dalphat = new THStack;
+  TLegend *leg_dalphat = new TLegend(0.13, 0.5, 0.33,0.9);
+  leg_dalphat->SetFillStyle(0);
+ 
+ 
+
+  Int_t nentries = (Int_t)t1->GetEntries();
+  const int nh1d = sizeof(hh1d)/sizeof(TH1D*);
+  const int nh1d_mom = sizeof(hh1d_mom)/sizeof(TH1D*);
+  cout<<"mom array len : "<<nh1d_mom<<endl;
+  cout<<"number of events : "<<nentries<<endl;
+  const int nh2d = sizeof(hh2d)/sizeof(TH2D*);
+  int npi_err{0};
+  for (Int_t i=0; i<nentries; i++)
+  {
+    t1->GetEntry(i);
+    Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue};
+    Double_t hh1d_mom_var_lst[] = {scattertheta, scattermomentum, mesontheta, mesonmomentum, recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat};
+        
+    //if(perweight<0 && i%500==0){cout<<"weight : "<<perweight<<endl;}
+    if(i%1000000==0){cout<<"meson(pi) p : "<<mesonmomentum<<endl;}
+    if(perweight>40){
+      if(i%100==0){printf("\nAlert!!  Filling Super weight!! %d %f skiping...\n", i, perweight);}
+    }
+    else
     {
-      t1->GetEntry(i);
-      //if(perweight<0 && i%500==0){cout<<"weight : "<<perweight<<endl;}
-      if(i%1000000==0){cout<<"meson(pi) p : "<<mesonmomentum<<endl;}
-      if(perweight>4000){
-        printf("\n\n\nAlert!!  Filling Super weight!! %d %f skiping...\n\n\n", i, perweight);
-      }
-      else
-      {
-        if(anaid == CC1piNpID){
-          if(targetZ == 1){//no hydrogen for GFS1
-            cout<<"no hydrogen for GFS1"<<endl;
-          }
+      if(anaid == CC1piNpID){
+        if(targetZ == 1){//no hydrogen for GFS1
+          cout<<"no hydrogen for GFS1"<<endl;
         }
-        if(anaid == 1){if(GeneratorUtils::GetNpi(npar)==0){npi_err++;}}
-        else{if(!(GeneratorUtils::GetNpi(npar)==0)){npi_err++;}}
+      }
+      if(anaid == 1){if(GeneratorUtils::GetNpi(npar)==0){npi_err++;}}
+      else{if(!(GeneratorUtils::GetNpi(npar)==0)){npi_err++;}}
 
+      int kk{0};
+
+      if(prod==1 && evtMode==1) //fil histogram bins for quasi elastic case
+      {
+        kk = 0;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
-        Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue};
-        Double_t hh1d_mom_var_lst[] = {scattertheta, scattermomentum, mesontheta, mesonmomentum, recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat};
         for(Int_t ii=0; ii<3; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
@@ -329,117 +426,92 @@ void hist_nuSTORM_musig_GiBUU_sim()
         {
           hh1d_mom[kk*nh1d_mom_temp+ii]->Fill(hh1d_mom_var_lst[ii],perweight);;
         }
-      /*
-      hxQ2_Q2->Fill(Q2,perweight);
-      hxQ2_W->Fill(Wtrue,perweight);
+        
+        h_weight_QE_scattertheta->Fill(scattertheta,perweight);
+      }
+      else if(prod>=2 && prod<=33 && evtMode==2) //fil histogram bins for resonance case
+      {
+        kk = 1;
+        hh2d[kk*2]->Fill(xBj,Q2,perweight);
+        hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        for(Int_t ii=0; ii<3; ii++)
+        {
+          hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
+        }
 
-      hxQ2_scattertheta->Fill(scattertheta,perweight);
-      hxQ2_scattermomentum->Fill(scattermomentum,perweight);
-      hxQ2_mesontheta->Fill(mesontheta,perweight);
-      hxQ2_mesonmomentum->Fill(mesonmomentum,perweight);
-      hxQ2_recoiltheta->Fill(recoiltheta,perweight);
-      hxQ2_recoilmomentum->Fill(recoilmomentum,perweight);
-      hxQ2_baryontheta->Fill(baryontheta,perweight);
-      hxQ2_baryonmomentum->Fill(baryonmomentum,perweight);
-      hxQ2_neutronmomentum->Fill(IApN,perweight);
-      hxQ2_dpt->Fill(dpt,perweight);
-      hxQ2_dphit->Fill(dphit,perweight);
-      hxQ2_dalphat->Fill(dalphat,perweight);
-      */
-      //h_weight_E7_scattertheta->Fill(scattertheta,perweight);
+        for(Int_t ii=0; ii<12; ii++)
+        {
+          hh1d_mom[kk*nh1d_mom_temp+ii]->Fill(hh1d_mom_var_lst[ii],perweight);;
+        }
+      }
+      else if(prod==34 && evtMode==3) //fil histogram bins for deep inelastic case
+      {
+        kk = 2;
+        hh2d[kk*2]->Fill(xBj,Q2,perweight);
+        hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        for(Int_t ii=0; ii<3; ii++)
+        {
+          hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
+        }
+
+        for(Int_t ii=0; ii<12; ii++)
+        {
+          hh1d_mom[kk*nh1d_mom_temp+ii]->Fill(hh1d_mom_var_lst[ii],perweight);;
+        }
+      }
+      else if(prod==35 && evtMode==4) //fil histogram bins for 2 part 2 hole case
+      {
+        kk = 3;
+        hh2d[kk*2]->Fill(xBj,Q2,perweight);
+        hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        for(Int_t ii=0; ii<3; ii++)
+        {
+          hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
+        }
+
+        for(Int_t ii=0; ii<12; ii++)
+        {
+          hh1d_mom[kk*nh1d_mom_temp+ii]->Fill(hh1d_mom_var_lst[ii],perweight);;
+        }
       }
     }
-    cout<<" n pi err # : "<<npi_err<<endl;
-    /*
-    hh2d[kk*2] = hxQ2;
-    hh2d[kk*2+1] = hxW;
-    const int nh1d_temp = sizeof(hh1d_temp)/sizeof(TH1D*);
-    const int nh1d_mom_temp = sizeof(hh1d_mom_temp)/sizeof(TH1D*);
-    for(Int_t ii=0; ii<nh1d_temp; ii++)
-    {
-      hh1d[kk*nh1d_temp+ii] = hh1d_temp[ii];
-    }
-    for(Int_t ii=0; ii<nh1d_mom_temp; ii++)
-    {
-      hh1d_mom[kk*nh1d_mom_temp+ii] = hh1d_mom_temp[ii];
-    }
-    */
-  };
+  }
+  cout<<" n pi err # : "<<npi_err<<endl;
 
-  THStack *stk_x = new THStack;
-  TLegend *leg_x = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_x->SetFillStyle(0);
-    
-  THStack *stk_Q2 = new THStack;
-  TLegend *leg_Q2 = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_Q2->SetFillStyle(0);
-  
-  THStack *stk_W = new THStack;
-  TLegend *leg_W = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_W->SetFillStyle(0);
-    
-  THStack *stk_mu_theta = new THStack;
-  TLegend *leg_mu_theta = new TLegend(0.13, 0.5, 0.33,0.9);
-  leg_mu_theta->SetFillStyle(0);
-    
-  THStack *stk_mu_mom = new THStack;
-  TLegend *leg_mu_mom = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_mu_mom->SetFillStyle(0);
-
-  THStack *stk_pi_theta = new THStack;
-  TLegend *leg_pi_theta = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_pi_theta->SetFillStyle(0);
-    
-  THStack *stk_pi_mom = new THStack;
-  TLegend *leg_pi_mom = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_pi_mom->SetFillStyle(0);
-
-  THStack *stk_recoil_theta = new THStack;
-  TLegend *leg_recoil_theta = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_recoil_theta->SetFillStyle(0);
-    
-  THStack *stk_recoil_mom = new THStack;
-  TLegend *leg_recoil_mom = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_recoil_mom->SetFillStyle(0);
-
-  THStack *stk_baryon_theta = new THStack;
-  TLegend *leg_baryon_theta = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_baryon_theta->SetFillStyle(0);
-    
-  THStack *stk_baryon_mom = new THStack;
-  TLegend *leg_baryon_mom = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_baryon_mom->SetFillStyle(0);
-
-  THStack *stk_neutron_mom = new THStack;
-  TLegend *leg_neutron_mom = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_neutron_mom->SetFillStyle(0);
-  
-  THStack *stk_dpt = new THStack;
-  TLegend *leg_dpt = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_dpt->SetFillStyle(0);
-
-  THStack *stk_dphit = new THStack;
-  TLegend *leg_dphit = new TLegend(0.7, 0.5, 0.9,0.9);
-  leg_dphit->SetFillStyle(0);
-  
-  THStack *stk_dalphat = new THStack;
-  TLegend *leg_dalphat = new TLegend(0.13, 0.5, 0.33,0.9);
-  leg_dalphat->SetFillStyle(0);
   Double_t temp_xsec{0};
-  /*
-  Double_t E7_x_xsec, E7_Q2_xsec, E7_W_xsec, E7_scattertheta_xsec, E7_scattermomentum_xsec, 
-    E7_mesontheta_xsec, E7_mesonmomentum_xsec, E7_recoiltheta_xsec, E7_recoilmomentum_xsec, 
-    E7_baryontheta_xsec, E7_baryonmomentum_xsec, E7_neutronmomentum_xsec, E7_dpt_xsec, E7_dphit_xsec, E7_dalphat_xsec;
 
-  Double_t xsec_lst[] = {E7_x_xsec, E7_Q2_xsec, E7_W_xsec, E7_scattertheta_xsec, E7_scattermomentum_xsec, 
-    E7_mesontheta_xsec, E7_mesonmomentum_xsec, E7_recoiltheta_xsec, E7_recoilmomentum_xsec, 
-    E7_baryontheta_xsec, E7_baryonmomentum_xsec, E7_neutronmomentum_xsec, E7_dpt_xsec, E7_dphit_xsec, E7_dalphat_xsec};
+  Double_t QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
+    QE_mesontheta_xsec, QE_mesonmomentum_xsec, QE_recoiltheta_xsec, QE_recoilmomentum_xsec, 
+    QE_baryontheta_xsec, QE_baryonmomentum_xsec, QE_neutronmomentum_xsec, QE_dpt_xsec, QE_dphit_xsec, QE_dalphat_xsec, 
+    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
+    RES_mesontheta_xsec, RES_mesonmomentum_xsec, RES_recoiltheta_xsec, RES_recoilmomentum_xsec, 
+    RES_baryontheta_xsec, RES_baryonmomentum_xsec, RES_neutronmomentum_xsec, RES_dpt_xsec, RES_dphit_xsec, RES_dalphat_xsec, 
+    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
+    DIS_mesontheta_xsec, DIS_mesonmomentum_xsec, DIS_recoiltheta_xsec, DIS_recoilmomentum_xsec, 
+    DIS_baryontheta_xsec, DIS_baryonmomentum_xsec, DIS_neutronmomentum_xsec, DIS_dpt_xsec, DIS_dphit_xsec, DIS_dalphat_xsec, 
+    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
+    a2p2h_mesontheta_xsec, a2p2h_mesonmomentum_xsec, a2p2h_recoiltheta_xsec, 
+    a2p2h_recoilmomentum_xsec, a2p2h_baryontheta_xsec, a2p2h_baryonmomentum_xsec, a2p2h_neutronmomentum_xsec, 
+    a2p2h_dpt_xsec, a2p2h_dphit_xsec, a2p2h_dalphat_xsec;
+
+  Double_t xsec_lst[] = {QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
+    QE_mesontheta_xsec, QE_mesonmomentum_xsec, QE_recoiltheta_xsec, QE_recoilmomentum_xsec, 
+    QE_baryontheta_xsec, QE_baryonmomentum_xsec, QE_neutronmomentum_xsec, QE_dpt_xsec, QE_dphit_xsec, QE_dalphat_xsec, 
+    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
+    RES_mesontheta_xsec, RES_mesonmomentum_xsec, RES_recoiltheta_xsec, RES_recoilmomentum_xsec, 
+    RES_baryontheta_xsec, RES_baryonmomentum_xsec, RES_neutronmomentum_xsec, RES_dpt_xsec, RES_dphit_xsec, RES_dalphat_xsec, 
+    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
+    DIS_mesontheta_xsec, DIS_mesonmomentum_xsec, DIS_recoiltheta_xsec, DIS_recoilmomentum_xsec, 
+    DIS_baryontheta_xsec, DIS_baryonmomentum_xsec, DIS_neutronmomentum_xsec, DIS_dpt_xsec, DIS_dphit_xsec, DIS_dalphat_xsec, 
+    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
+    a2p2h_mesontheta_xsec, a2p2h_mesonmomentum_xsec, a2p2h_recoiltheta_xsec, 
+    a2p2h_recoilmomentum_xsec, a2p2h_baryontheta_xsec, a2p2h_baryonmomentum_xsec, a2p2h_neutronmomentum_xsec, 
+    a2p2h_dpt_xsec, a2p2h_dphit_xsec, a2p2h_dalphat_xsec};
   const int nxsec = sizeof(xsec_lst)/sizeof(Double_t);
-  */
+
   int normal_choice{1}; //if 0 just remove negative cross section if 1 do column normalization
-  double histnormFactor{0};
+
   for(int ii=0; ii<nh2d; ii++){
-    histnormFactor = histnormFactor_lst[ii/2];
     if(normal_choice==0)
     {
       hh2d[ii]->Scale(1/histnormFactor);
@@ -473,26 +545,25 @@ void hist_nuSTORM_musig_GiBUU_sim()
     c1->Print("plot.pdf",hh2d[ii]->GetTitle());
     c1->Print(Form("png/%s_%s.png", anatag, hh2d[ii]->GetTitle()));
 
-    //leg->Clear();
+    leg->Clear();
   }
   /*
-  remove_neg(h_weight_E7_scattertheta);
-  h_weight_E7_scattertheta->GetXaxis()->SetTitle("E7 #theta_{mu}");
-  h_weight_E7_scattertheta->GetYaxis()->SetTitle("weight");
+  remove_neg(h_weight_QE_scattertheta);
+  h_weight_QE_scattertheta->GetXaxis()->SetTitle("QE #theta_{mu}");
+  h_weight_QE_scattertheta->GetYaxis()->SetTitle("weight");
   gPad->SetLogy(0); //set y axis to log-1 lin-0 scale
   gPad->Update();
-  h_weight_E7_scattertheta->SetContour(1000);
-  h_weight_E7_scattertheta->Draw("colz");
+  h_weight_QE_scattertheta->SetContour(1000);
+  h_weight_QE_scattertheta->Draw("colz");
   gStyle->SetPadRightMargin(0.2);
-  c1->Print("plot.pdf",h_weight_E7_scattertheta->GetTitle());
-  c1->Print(Form("png/%s_%s.png", anatag, h_weight_E7_scattertheta->GetTitle()));
+  c1->Print("plot.pdf",h_weight_QE_scattertheta->GetTitle());
+  c1->Print(Form("png/%s_%s.png", anatag, h_weight_QE_scattertheta->GetTitle()));
   */
-  TString tit[]={"E7 x_{Bj}-Q^{2}", "E7 x_{Bj}-W","E7 x_{Bj}", "E7 Q^{2}(GeV^{2})", "E7 W(GeV)"};
+  
   int aa{0};
   Double_t binwidth{0};
   for(int ii=0; ii<nh1d; ii++){
     if(aa%4==0){++aa;};
-    histnormFactor = histnormFactor_lst[ii/3];
     binwidth = hh1d[ii]->GetXaxis()->GetBinWidth(1);
     hh1d[ii]->Scale(1/(histnormFactor*binwidth)); //to get diff cross section
     hh1d[ii]->GetXaxis()->SetTitle(tit[aa]);
@@ -501,12 +572,11 @@ void hist_nuSTORM_musig_GiBUU_sim()
     //leg->SetFillStyle(0);
     hh1d[ii]->SetLineStyle(kSolid);
     hh1d[ii]->SetLineColor(cols[ii/3]);
-    hh1d[ii]->SetFillStyle(3001);
-    //hh1d[ii]->SetFillStyle(4050);//for trasparent filling
-    //hh1d[ii]->SetFillColorAlpha(cols[ii/3],0.35);
+    hh1d[ii]->SetFillStyle(4050);
+    hh1d[ii]->SetFillColorAlpha(cols[ii/3],0.35);
 
     temp_xsec = hh1d[ii]->Integral(0,10000,"width");
-    //xsec_lst[(ii/3)*14+ii%3] = temp_xsec;
+    xsec_lst[(ii/3)*14+ii%3] = temp_xsec;
 
     //TString temp_tit="";
     //temp_tit = tit[ii*4];
@@ -528,25 +598,23 @@ void hist_nuSTORM_musig_GiBUU_sim()
   }
   //binwidth = 0;
   int count_num{12}, stk_num{0};
-  for(int ii=0; ii<nh1d_mom; ii++)
-  {
-    histnormFactor = histnormFactor_lst[ii/12];
+  for(int ii=0; ii<nh1d_mom; ii++){
+    if(aa%4==0){++aa;};
     diff_xsec(hh1d_mom[ii], histnormFactor);
+    //hh1d_mom[ii]->GetXaxis()->SetTitle(tit[aa]);
     hh1d_mom[ii]->GetYaxis()->SetTitle("differential cross section(cm^{2}/GeV/nucleon)");
     
     //leg->SetFillStyle(0);
     hh1d_mom[ii]->SetLineStyle(kSolid);
     hh1d_mom[ii]->SetLineColor(cols[ii/count_num]);
-    hh1d_mom[ii]->SetFillStyle(3001);
-    //hh1d_mom[ii]->SetFillStyle(4050);
-    //hh1d_mom[ii]->SetFillColorAlpha(cols[ii/count_num],0.35);
+    hh1d_mom[ii]->SetFillStyle(4050);
+    hh1d_mom[ii]->SetFillColorAlpha(cols[ii/count_num],0.35);
     //cout<<"title : "<<hh1d_mom[ii]->GetTitle()<<endl;
 
     temp_xsec = hh1d_mom[ii]->Integral(0,10000,"width");
-    //xsec_lst[(ii/count_num)*15+3+ii%count_num] = temp_xsec;
+    xsec_lst[(ii/count_num)*15+3+ii%count_num] = temp_xsec;
     switch (ii%count_num)
     {
-
       case 0:
         stk_mu_theta->Add(hh1d_mom[ii]);
         leg_mu_theta->AddEntry(hh1d_mom[ii],hh1d_mom[ii]->GetTitle(),"fl");
@@ -606,9 +674,9 @@ void hist_nuSTORM_musig_GiBUU_sim()
         stk_dalphat->Add(hh1d_mom[ii]);
         leg_dalphat->AddEntry(hh1d_mom[ii],hh1d_mom[ii]->GetTitle(),"fl");
         break;
-
     }
     
+    ++aa;
   }
   
   gPad->SetLogy(0);//set y axis to linear scale
@@ -616,16 +684,14 @@ void hist_nuSTORM_musig_GiBUU_sim()
 
   aa=0;
   cout<<"xsec for "<<anatag<<endl;
-  /*
   for(int ii=0; ii<nxsec; ii++)
   {
-    cout<<"xsec calc with : "<<var[ii%(nxsec)]<<" is "<<xsec_lst[ii]<<" cm^{2}"<<endl;
+    cout<<"xsec for mode : "<<mode[ii/(nxsec/4)]<<" calc with : "<<var[ii%(nxsec/4)]
+    <<" is "<<xsec_lst[ii]<<" cm^{2}"<<endl;
   }
-  */
   cout<<endl;
   Double_t comb_xsec{0};
-  /*
-  for(int ii=0; ii<(nxsec); ii++)
+  for(int ii=0; ii<(nxsec/4); ii++)
   {
     for(int jj=0; jj<4; jj++)
     {
@@ -634,7 +700,9 @@ void hist_nuSTORM_musig_GiBUU_sim()
     cout<<"combind total xsec cal with "<<var[ii]<<" : "<<comb_xsec<<" cm^{2}"<<endl;
     comb_xsec = 0;
   }
-  */
+
+
+  TString leghead = "GIBUU", leghead_ori = "GIBUU";
 
   const TString opt_same="same hist";
   const TString opt_err_bar="X1 E0";
@@ -807,6 +875,6 @@ void hist_nuSTORM_musig_GiBUU_sim()
   c1->Print("plot.pdf","dalphat of diff E modes");
   c1->Print(Form("png/%s_%s.png", anatag, "dalphat of diff E modes"));
   
-  c1->Print("plot.pdf]","dalphat of diff E modess");
+  c1->Print("plot.pdf]","dalphat of 4 event modess");
   fout->Close();
 }
