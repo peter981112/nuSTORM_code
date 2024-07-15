@@ -185,7 +185,7 @@ void diff_xsec(TH1D* &hist, const double histnormFactor) //makes all bin content
 
 void hist_nuSTORM_musig_GiBUU_2()
 {
-  /*
+  
   TString fn_lst[] = {"E3_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E4_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root",
     "E5_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E6_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root", "E7_outAna9_GFS0PIa9nuC_Filelist_GiBUU.root"};
   int anaid{1};
@@ -198,7 +198,7 @@ void hist_nuSTORM_musig_GiBUU_2()
 
   Double_t hh1d_mom_hist_lower_bound[] = {0,1.4,0,0,0,0.4,0,0,0,0,0,0};
   Double_t hh1d_mom_hist_upper_bound[] = {21,5.5,180,3.5,75,1.3,75,1.5,1.3,1.5,180,180};
-  */
+  /*
   TString fn_lst[] = {"E3_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E4_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", 
     "E5_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E6_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root", "E7_outAna7_GFSPIZEROa7nuC_Filelist_GiBUU.root"};
   int anaid{2};
@@ -211,7 +211,7 @@ void hist_nuSTORM_musig_GiBUU_2()
 
   Double_t hh1d_mom_hist_lower_bound[] = {0,1.4,0,0,0,0.4,0,0.4,0,0,0,0};
   Double_t hh1d_mom_hist_upper_bound[] = {26,5.5,180,2.1,180,3.5,180,4,1.7,1.6,180,180};
- 
+ */
   
   const Int_t n_E = sizeof(fn_lst)/sizeof(TString);
   const double dummyunit = 1E-42; //data
@@ -221,14 +221,14 @@ void hist_nuSTORM_musig_GiBUU_2()
 
   double histnormFactor_lst[n_E];
   
-  const TString E_modes[]={"E3","E4","E5","E6","E7"};
-  TString var[] = {"x", "Q2", "W", "scatter #theta", "scatter p", 
+  string E_modes[]={"E3","E4","E5","E6","E7"};
+  string var[] = {"x", "Q2", "W", "scatter #theta", "scatter p", 
       "meson #theta", "meson p", "recoil #theta", "recoil pm", "baryon #theta", "baryon p",
       "p_{n}", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
   string mode[] = {"QE", "RES", "DIS", "2p2h"};
   const int pdsmin[]={0,     1, 2, 3, 4, 5};
   const int pdsmax[]={10000, 1, 2, 3, 4, 5};
-  const Int_t nmode = sizeof(E_modes)/sizeof(TString);
+  const Int_t nmode = sizeof(E_modes)/sizeof(string);
 
   TString temp_name = "";
   TString temp_tit = "";
@@ -239,13 +239,13 @@ void hist_nuSTORM_musig_GiBUU_2()
   {
     if(i%2 == 0)
     {
-      temp_name = temp_name+"hxQ2 "+ E_modes[i/2];
-      temp_tit = temp_tit+"x-Q^{2} for "+ E_modes[i/2];
+      temp_name = "hxQ2 "+ E_modes[i/2];
+      temp_tit = "x-Q^{2} for "+ E_modes[i/2];
     }
     else
     {
-      temp_name = temp_name+"hxW "+ E_modes[i/2];
-      temp_tit = temp_tit+"x-W for "+ E_modes[i/2];
+      temp_name = "hxW "+ E_modes[i/2];
+      temp_tit = "x-W for "+ E_modes[i/2];
     }
     hh2d_name_lst[i/2][i%2] = temp_name;
     hh2d_tit_lst[i/2][i%2] = temp_tit;
@@ -259,8 +259,8 @@ void hist_nuSTORM_musig_GiBUU_2()
   TString hh1d_tit_lst[n_E][3];
   for(int i=0; i<3*n_E; i++)
   {
-    temp_name = temp_name+"hxQ2 "+var[i%3]+ E_modes[i/3];
-    temp_tit = temp_tit+var[i%3]+" for "+ E_modes[i/3];
+    temp_name = "hxQ2 "+var[i%3]+ E_modes[i/3];
+    temp_tit = var[i%3]+" for "+ E_modes[i/3];
 
     hh1d_name_lst[i/3][i%3] = temp_name;
     hh1d_tit_lst[i/3][i%3] = temp_tit;
@@ -276,8 +276,8 @@ void hist_nuSTORM_musig_GiBUU_2()
   TString hh1d_mom_tit_lst[n_E][12];
   for(int i=0; i<12*n_E; i++)
   {
-    temp_name = temp_name+"hxQ2 "+var[i%12+3]+ E_modes[i/12];
-    temp_tit = temp_tit+var[i%12+3]+" for "+ E_modes[i/12];
+    temp_name = "hxQ2 "+var[i%12+3]+ E_modes[i/12];
+    temp_tit = var[i%12+3]+" for "+ E_modes[i/12];
 
     hh1d_mom_name_lst[i/12][i%12] = temp_name;
     hh1d_mom_tit_lst[i/12][i%12] = temp_tit;
