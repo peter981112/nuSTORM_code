@@ -20,9 +20,9 @@
 #include <iostream>
 #include <string>
 
-#include "/home/wchang/GiBUU_2024/NuGenTKI/include/HistIO.h"
-#include "/home/wchang/GiBUU_2024/NuGenTKI/include/GeneratorUtils.h"
-#include "/home/wchang/GiBUU_2024/NuGenTKI/style/style.h"
+#include "/home/wonjong/GiBUU_2024/NuGenTKI/include/HistIO.h"
+#include "/home/wonjong/GiBUU_2024/NuGenTKI/include/GeneratorUtils.h"
+#include "/home/wonjong/GiBUU_2024/NuGenTKI/style/style.h"
 
 using namespace HistIO;
 using namespace std;
@@ -144,13 +144,13 @@ void hist_2d_prod_no_data()
   int noff{2};
   auto anatag{"outana9"};
   cout<<"plotting outana9 - case with no pi 0"<<endl;
-  */
+   */
   TString fn{"outAna7_MINERvALE_GiBUU_test_GFSPIZEROa7nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
   int anaid{2};
   int noff{1};
   cout<<"plotting outana7 - case with pi 0"<<endl;
   auto anatag{"outana7"};
-  
+
   
   TFile *f = new TFile(fn);
   TFile *fout = new TFile("tmpplot.root","recreate");
@@ -186,12 +186,13 @@ void hist_2d_prod_no_data()
   gStyle->SetPadRightMargin(0.2);
   gStyle->SetPadLeftMargin(0.1);
   gStyle-> SetPalette(kRainbow);
-  Double_t xBj, Q2, Wtrue, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
+  Double_t xBj, Q2, Wtrue, beamE, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
     recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT;
   Int_t prod,evtMode;
   t1->SetBranchAddress("xBj",&xBj);
   t1->SetBranchAddress("Q2",&Q2);
   t1->SetBranchAddress("Wtrue",&Wtrue);
+  t1->SetBranchAddress("beamE",&beamE);
   t1->SetBranchAddress("scattertheta",&scattertheta);
   t1->SetBranchAddress("scattermomentum",&scattermomentum);
   t1->SetBranchAddress("mesontheta",&mesontheta);
@@ -210,18 +211,22 @@ void hist_2d_prod_no_data()
   t1->SetBranchAddress("perweight",&perweight);
   
   TString E_modes[]={"QE","RES","DIS","2p2h"};
-  TString var[] = {"x", "Q2", "W", "scattertheta", "scattermomentum", 
+  TString var[] = {"x", "Q2", "W", "beamE", "scattertheta", "scattermomentum", 
       "mesontheta", "mesonmomentum", "recoiltheta", "recoilmomentum", "baryontheta", "baryonmomentum",
       "neutronmomentum", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
   //const Int_t nmode = sizeof(E_modes)/sizeof(TString);
   const Int_t n_E = sizeof(E_modes)/sizeof(TString);
 
+  const int nh2d_temp = 2;
+  const int nh1d_temp = 4;//sizeof(hh1d_temp)/sizeof(TH1D*);
+  const int nh1d_mom_temp = 12;//sizeof(hh1d_mom_temp)/sizeof(TH1D*);
+
   TString temp_name = "";
   TString temp_tit = "";
-  TH2D *hh2d[2*n_E]; //list of 2d hist {hxQ2_E7, hxW_E7}
-  TString hh2d_name_lst[2*n_E];
-  TString hh2d_tit_lst[2*n_E];
-  for(int i=0; i<2*n_E; i++)
+  TH2D *hh2d[nh2d_temp*n_E]; //list of 2d hist {hxQ2_E7, hxW_E7}
+  TString hh2d_name_lst[nh2d_temp*n_E];
+  TString hh2d_tit_lst[nh2d_temp*n_E];
+  for(int i=0; i<nh2d_temp*n_E; i++)
   {
     if(i%2 == 0)
     {
@@ -240,13 +245,13 @@ void hist_2d_prod_no_data()
     temp_tit = "";
   }
 
-  TH1D *hh1d[3*n_E]; //list of 1d hist {hxQ2_E7_x, hxQ2_E7_Q2, hxQ2_E7_W}
-  TString hh1d_name_lst[3*n_E];
-  TString hh1d_tit_lst[3*n_E];
-  for(int i=0; i<3*n_E; i++)
+  TH1D *hh1d[nh1d_temp*n_E]; //list of 1d hist {hxQ2_E7_x, hxQ2_E7_Q2, hxQ2_E7_W, hxQ2_E7_beamE}
+  TString hh1d_name_lst[nh1d_temp*n_E];
+  TString hh1d_tit_lst[nh1d_temp*n_E];
+  for(int i=0; i<nh1d_temp*n_E; i++)
   {
-    temp_name = temp_name+"hxQ2 "+var[i%3]+ E_modes[i/3];
-    temp_tit = temp_tit+var[i%3]+" for "+ E_modes[i/3];
+    temp_name = temp_name+"hxQ2 "+var[i%nh1d_temp]+ E_modes[i/nh1d_temp];
+    temp_tit = temp_tit+var[i%nh1d_temp]+" for "+ E_modes[i/nh1d_temp];
 
     hh1d_name_lst[i] = temp_name;
     hh1d_tit_lst[i] = temp_tit;
@@ -258,12 +263,12 @@ void hist_2d_prod_no_data()
   TH1D *hh1d_mom[12*n_E];//={hxQ2_E7_scattertheta, hxQ2_E7_scattermomentum,  hxQ2_E7_mesontheta, hxQ2_E7_mesonmomentum, 
     //hxQ2_E7_recoiltheta, hxQ2_E7_recoilmomentum,  hxQ2_E7_baryontheta, hxQ2_E7_baryonmomentum, 
     //hxQ2_E7_neutronmomentum, hxQ2_E7_dpt, hxQ2_E7_dphit, hxQ2_E7_dalphat};
-  TString hh1d_mom_name_lst[12*n_E];
-  TString hh1d_mom_tit_lst[12*n_E];
-  for(int i=0; i<12*n_E; i++)
+  TString hh1d_mom_name_lst[nh1d_mom_temp*n_E];
+  TString hh1d_mom_tit_lst[nh1d_mom_temp*n_E];
+  for(int i=0; i<nh1d_mom_temp*n_E; i++)
   {
-    temp_name = temp_name+"hxQ2_"+var[i%12+3]+ E_modes[i/12];
-    temp_tit = temp_tit+var[i%12+3]+" for "+ E_modes[i/12];
+    temp_name = temp_name+"hxQ2_"+var[i%nh1d_mom_temp+nh1d_temp]+ E_modes[i/nh1d_mom_temp];
+    temp_tit = temp_tit+var[i%nh1d_mom_temp+nh1d_temp]+" for "+ E_modes[i/nh1d_mom_temp];
 
     hh1d_mom_name_lst[i] = temp_name;
     hh1d_mom_tit_lst[i] = temp_tit;
@@ -272,9 +277,6 @@ void hist_2d_prod_no_data()
     temp_tit = "";
   }
 
-  const int nh2d_temp = 2;
-  const int nh1d_temp = 3;//sizeof(hh1d_temp)/sizeof(TH1D*);
-  const int nh1d_mom_temp = 12;//sizeof(hh1d_mom_temp)/sizeof(TH1D*);
 
   for(Int_t kk=0; kk<n_E; kk++)
   {
@@ -296,18 +298,18 @@ void hist_2d_prod_no_data()
     Double_t hh1d_mom_hist_upper_bound[] = {26,5.5,180,3.5,180,4.5,180,5,2,2.5,180,180};
     */
 
-    Double_t hh1d_hist_lower_bound[] = {0,0,0.5};
-    Double_t hh1d_hist_upper_bound[] = {2.5,12,12};
+    Double_t hh1d_hist_lower_bound[] = {0,0,0.5,0};
+    Double_t hh1d_hist_upper_bound[] = {2.1,2.5,3,8};
     for(Int_t ii=0; ii<nh1d_temp; ii++)
     {
-      hh1d[kk*nh1d_temp+ii] = new TH1D(hh1d_name_lst[kk*3+ii],hh1d_tit_lst[kk*3+ii],60,hh1d_hist_lower_bound[ii],hh1d_hist_upper_bound[ii]);   
+      hh1d[kk*nh1d_temp+ii] = new TH1D(hh1d_name_lst[kk*nh1d_temp+ii],hh1d_tit_lst[kk*nh1d_temp+ii],60,hh1d_hist_lower_bound[ii],hh1d_hist_upper_bound[ii]);   
     }
-    Double_t hh1d_mom_hist_lower_bound[] = {0,1,0,0,0,0,0,0,0,0,0,0};
-    Double_t hh1d_mom_hist_upper_bound[] = {180,15,180,15,180,15,180,15,12,12.5,180,180};
+    Double_t hh1d_mom_hist_lower_bound[] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    Double_t hh1d_mom_hist_upper_bound[] = {120,10,180,4.5,180,4,180,15,2,2.5,180,180};
     
     for(Int_t ii=0; ii<nh1d_mom_temp; ii++)
     {
-      hh1d_mom[kk*nh1d_mom_temp+ii] = new TH1D(hh1d_mom_name_lst[kk*12+ii],hh1d_mom_tit_lst[kk*12+ii],60,hh1d_mom_hist_lower_bound[ii],hh1d_mom_hist_upper_bound[ii]);
+      hh1d_mom[kk*nh1d_mom_temp+ii] = new TH1D(hh1d_mom_name_lst[kk*nh1d_mom_temp+ii],hh1d_mom_tit_lst[kk*nh1d_mom_temp+ii],60,hh1d_mom_hist_lower_bound[ii],hh1d_mom_hist_upper_bound[ii]);
     }
   }
 
@@ -331,6 +333,10 @@ void hist_2d_prod_no_data()
   THStack *stk_W = new THStack;
   TLegend *leg_W = new TLegend(0.7, 0.5, 0.9,0.9);
   leg_W->SetFillStyle(0);
+
+  THStack *stk_beamE = new THStack;
+  TLegend *leg_beamE = new TLegend(0.7, 0.5, 0.9,0.9);
+  leg_beamE->SetFillStyle(0);
   
   THStack *stk_mu_theta = new THStack;
   TLegend *leg_mu_theta = new TLegend(0.7, 0.5, 0.9,0.9);
@@ -392,7 +398,7 @@ void hist_2d_prod_no_data()
   for (Int_t i=0; i<nentries; i++)
   {
     t1->GetEntry(i);
-    Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue};
+    Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue, beamE};
     Double_t hh1d_mom_var_lst[] = {scattertheta, scattermomentum, mesontheta, mesonmomentum, recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat};
         
     //if(perweight<0 && i%500==0){cout<<"weight : "<<perweight<<endl;}
@@ -417,7 +423,7 @@ void hist_2d_prod_no_data()
         kk = 0;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
-        for(Int_t ii=0; ii<3; ii++)
+        for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
         }
@@ -434,7 +440,7 @@ void hist_2d_prod_no_data()
         kk = 1;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
-        for(Int_t ii=0; ii<3; ii++)
+        for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
         }
@@ -449,7 +455,7 @@ void hist_2d_prod_no_data()
         kk = 2;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
-        for(Int_t ii=0; ii<3; ii++)
+        for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
         }
@@ -464,7 +470,7 @@ void hist_2d_prod_no_data()
         kk = 3;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
-        for(Int_t ii=0; ii<3; ii++)
+        for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
         }
@@ -480,30 +486,30 @@ void hist_2d_prod_no_data()
 
   Double_t temp_xsec{0};
 
-  Double_t QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
+  Double_t QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_beamE_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
     QE_mesontheta_xsec, QE_mesonmomentum_xsec, QE_recoiltheta_xsec, QE_recoilmomentum_xsec, 
     QE_baryontheta_xsec, QE_baryonmomentum_xsec, QE_neutronmomentum_xsec, QE_dpt_xsec, QE_dphit_xsec, QE_dalphat_xsec, 
-    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
+    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_beamE_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
     RES_mesontheta_xsec, RES_mesonmomentum_xsec, RES_recoiltheta_xsec, RES_recoilmomentum_xsec, 
     RES_baryontheta_xsec, RES_baryonmomentum_xsec, RES_neutronmomentum_xsec, RES_dpt_xsec, RES_dphit_xsec, RES_dalphat_xsec, 
-    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
+    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_beamE_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
     DIS_mesontheta_xsec, DIS_mesonmomentum_xsec, DIS_recoiltheta_xsec, DIS_recoilmomentum_xsec, 
     DIS_baryontheta_xsec, DIS_baryonmomentum_xsec, DIS_neutronmomentum_xsec, DIS_dpt_xsec, DIS_dphit_xsec, DIS_dalphat_xsec, 
-    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
+    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_beamE_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
     a2p2h_mesontheta_xsec, a2p2h_mesonmomentum_xsec, a2p2h_recoiltheta_xsec, 
     a2p2h_recoilmomentum_xsec, a2p2h_baryontheta_xsec, a2p2h_baryonmomentum_xsec, a2p2h_neutronmomentum_xsec, 
     a2p2h_dpt_xsec, a2p2h_dphit_xsec, a2p2h_dalphat_xsec;
 
-  Double_t xsec_lst[] = {QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
+  Double_t xsec_lst[] = {QE_x_xsec, QE_Q2_xsec, QE_W_xsec, QE_beamE_xsec, QE_scattertheta_xsec, QE_scattermomentum_xsec, 
     QE_mesontheta_xsec, QE_mesonmomentum_xsec, QE_recoiltheta_xsec, QE_recoilmomentum_xsec, 
     QE_baryontheta_xsec, QE_baryonmomentum_xsec, QE_neutronmomentum_xsec, QE_dpt_xsec, QE_dphit_xsec, QE_dalphat_xsec, 
-    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
+    RES_x_xsec, RES_Q2_xsec, RES_W_xsec, RES_beamE_xsec, RES_scattertheta_xsec, RES_scattermomentum_xsec, 
     RES_mesontheta_xsec, RES_mesonmomentum_xsec, RES_recoiltheta_xsec, RES_recoilmomentum_xsec, 
     RES_baryontheta_xsec, RES_baryonmomentum_xsec, RES_neutronmomentum_xsec, RES_dpt_xsec, RES_dphit_xsec, RES_dalphat_xsec, 
-    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
+    DIS_x_xsec, DIS_Q2_xsec, DIS_W_xsec, DIS_beamE_xsec, DIS_scattertheta_xsec, DIS_scattermomentum_xsec, 
     DIS_mesontheta_xsec, DIS_mesonmomentum_xsec, DIS_recoiltheta_xsec, DIS_recoilmomentum_xsec, 
     DIS_baryontheta_xsec, DIS_baryonmomentum_xsec, DIS_neutronmomentum_xsec, DIS_dpt_xsec, DIS_dphit_xsec, DIS_dalphat_xsec, 
-    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
+    a2p2h_x_xsec, a2p2h_Q2_xsec, a2p2h_W_xsec, a2p2h_beamE_xsec, a2p2h_scattertheta_xsec, a2p2h_scattermomentum_xsec, 
     a2p2h_mesontheta_xsec, a2p2h_mesonmomentum_xsec, a2p2h_recoiltheta_xsec, 
     a2p2h_recoilmomentum_xsec, a2p2h_baryontheta_xsec, a2p2h_baryonmomentum_xsec, a2p2h_neutronmomentum_xsec, 
     a2p2h_dpt_xsec, a2p2h_dphit_xsec, a2p2h_dalphat_xsec};
@@ -571,28 +577,33 @@ void hist_2d_prod_no_data()
     
     //leg->SetFillStyle(0);
     hh1d[ii]->SetLineStyle(kSolid);
-    hh1d[ii]->SetLineColor(cols[ii/3]);
+    hh1d[ii]->SetLineColor(cols[ii/4]);
     hh1d[ii]->SetFillStyle(4050);
-    hh1d[ii]->SetFillColorAlpha(cols[ii/3],0.35);
+    hh1d[ii]->SetFillColorAlpha(cols[ii/4],0.35);
 
     temp_xsec = hh1d[ii]->Integral(0,10000,"width");
-    xsec_lst[(ii/3)*14+ii%3] = temp_xsec;
+    xsec_lst[(ii/4)*15+ii%4] = temp_xsec;
 
     //TString temp_tit="";
     //temp_tit = tit[ii*4];
-    if(ii%3==0){
+    if(ii%4==0){
       stk_x->Add(hh1d[ii]);
       leg_x->AddEntry(hh1d[ii],hh1d[ii]->GetTitle(),"fl");
     }
     
-    else if(ii%3==1){
+    else if(ii%4==1){
       stk_Q2->Add(hh1d[ii]);
       leg_Q2->AddEntry(hh1d[ii],hh1d[ii]->GetTitle(),"fl");
     }
 
-    else{
+    else if(ii%4==2){
       stk_W->Add(hh1d[ii]);
       leg_W->AddEntry(hh1d[ii],hh1d[ii]->GetTitle(),"fl");
+    }
+
+    else{
+      stk_beamE->Add(hh1d[ii]);
+      leg_beamE->AddEntry(hh1d[ii],hh1d[ii]->GetTitle(),"fl");
     }
     ++aa;
   }
@@ -612,7 +623,7 @@ void hist_2d_prod_no_data()
     //cout<<"title : "<<hh1d_mom[ii]->GetTitle()<<endl;
 
     temp_xsec = hh1d_mom[ii]->Integral(0,10000,"width");
-    xsec_lst[(ii/count_num)*15+3+ii%count_num] = temp_xsec;
+    xsec_lst[(ii/count_num)*15+4+ii%count_num] = temp_xsec;
     switch (ii%count_num)
     {
       case 0:
@@ -741,6 +752,17 @@ void hist_2d_prod_no_data()
   leg_W->Draw();
   c1->Print("plot.pdf","W of diff E modes");
   c1->Print(Form("png/%s_%s.png", anatag, "W of diff E modes"));
+
+  stk_beamE->Draw(opt_nostack);
+  stk_beamE->GetXaxis()->SetTitle("beam E(GeV)");
+  stk_beamE->GetYaxis()->SetTitle("#frac{d#sigma}{dE_{#nu}}(cm^{2}/GeV/nucleon)");
+  stk_beamE->SetTitle("beam E of diff E modes");
+  gStyle->SetTitleX(0.5);
+  gStyle->SetPadRightMargin(0.1);
+  gStyle->SetPadLeftMargin(0.1);
+  leg_beamE->Draw();
+  c1->Print("plot.pdf","beamE of diff E modes");
+  c1->Print(Form("png/%s_%s.png", anatag, "beam E of diff E modes"));
 
   stk_mu_theta->Draw(opt_nostack);
   stk_mu_theta->GetXaxis()->SetTitle("#theta of #mu(degree)");
