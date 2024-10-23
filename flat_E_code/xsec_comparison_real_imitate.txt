@@ -1,0 +1,180 @@
+E7 nue outana7
+
+real sim
+
+direct perweight calc total xsec : 2.00796e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.25443e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.51543e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 1.77499e-40 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 7.09126e-42 cm^{2}
+
+imitate
+
+direct perweight calc total xsec : 2.00181e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.28942e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.51086e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 1.77017e-40 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 7.05918e-42 cm^{2}
+
+outana9
+
+real sim
+
+direct perweight calc total xsec : 6.27358e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.29458e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.60246e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 5.20043e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.26741e-39 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 6.1869e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.27683e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.59608e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 5.17062e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.26227e-39 cm^{2}
+
+
+
+E6 nue outana7
+
+real sim
+
+direct perweight calc total xsec : 9.3584e-40 cm^{2}
+direct perweight calc xsec for mode : QE is 2.27629e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 9.02546e-40 cm^{2}
+direct perweight calc xsec for mode : DIS is 5.99166e-42 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 4.53999e-42 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 2.00181e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.28942e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.51086e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 1.77017e-40 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 7.05918e-42 cm^{2}
+
+outana9
+
+real sim
+
+direct perweight calc total xsec : 6.18218e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.30887e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.55896e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 3.54269e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.27893e-39 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 6.15787e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.29706e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.55205e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 3.52545e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.27351e-39 cm^{2}
+
+E5 nue outana7
+
+real sim
+
+direct perweight calc total xsec : 1.41285e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.04586e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.30897e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 6.69713e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 6.44999e-42 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 1.40916e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.07373e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.30521e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 6.67708e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 6.43508e-42 cm^{2}
+
+outana9
+
+real sim
+
+direct perweight calc total xsec : 6.13001e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.32462e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.49615e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 1.98463e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.28939e-39 cm^{2}
+
+imitate
+
+direct perweight calc total xsec : 6.11032e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.31578e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.4904e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 1.97517e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.28438e-39 cm^{2}
+
+E4 nue outana7
+
+real sim
+
+direct perweight calc total xsec : 1.22348e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 2.83678e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.16185e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 2.73793e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 5.88502e-42 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 1.22035e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 2.86945e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 1.15838e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 2.73987e-41 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 5.87574e-42 cm^{2}
+
+outana9
+
+real sim
+
+direct perweight calc total xsec : 6.09121e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.35821e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.41775e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 8.17563e-42 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.30707e-39 cm^{2}
+
+imitate
+
+direct perweight calc total xsec : 6.06951e-39 cm^{2}
+direct perweight calc xsec for mode : QE is 3.34591e-39 cm^{2}
+direct perweight calc xsec for mode : RES is 1.41291e-39 cm^{2}
+direct perweight calc xsec for mode : DIS is 8.10659e-42 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 1.30258e-39 cm^{2}
+
+
+E3 nue outana7
+
+real sim
+
+direct perweight calc total xsec : 9.3584e-40 cm^{2}
+direct perweight calc xsec for mode : QE is 2.27629e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 9.02546e-40 cm^{2}
+direct perweight calc xsec for mode : DIS is 5.99166e-42 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 4.53999e-42 cm^{2}
+
+
+imitate
+
+direct perweight calc total xsec : 9.38132e-40 cm^{2}
+direct perweight calc xsec for mode : QE is 2.31752e-41 cm^{2}
+direct perweight calc xsec for mode : RES is 9.04352e-40 cm^{2}
+direct perweight calc xsec for mode : DIS is 6.03956e-42 cm^{2}
+direct perweight calc xsec for mode : 2p2h is 4.56605e-42 cm^{2}
+
+
+outana9
+
+real sim
+
+
+
+imitate
+

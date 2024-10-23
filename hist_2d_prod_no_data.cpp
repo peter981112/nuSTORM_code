@@ -16,13 +16,14 @@
 #include "TStyle.h"
 #include "TSystem.h"
 #include "TTree.h"
+#include "TChain.h"
 
 #include <iostream>
 #include <string>
 
-#include "/home/wonjong/GiBUU_2024/NuGenTKI/include/HistIO.h"
-#include "/home/wonjong/GiBUU_2024/NuGenTKI/include/GeneratorUtils.h"
-#include "/home/wonjong/GiBUU_2024/NuGenTKI/style/style.h"
+#include "/opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/include/HistIO.h"
+#include "/opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/include/GeneratorUtils.h"
+#include "/opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/style/style.h"
 
 using namespace HistIO;
 using namespace std;
@@ -92,6 +93,7 @@ void diff_xsec(TH1D* &hist, const double histnormFactor) //makes all bin content
   return;
 }
 
+
 double GetChi2_stack(THStack *sim_stack, TH1D * data_hist, 
   const TMatrixD *rawcov, const int noff, const double dummyunit)
 {
@@ -138,23 +140,40 @@ double GetChi2_stack(THStack *sim_stack, TH1D * data_hist,
 
 void hist_2d_prod_no_data()
 {
-/*
-  TString fn{"outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
+
+  TString fn1{"outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
+  TString fn0{"outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon_1.root"};
   int anaid{1};
   int noff{2};
   auto anatag{"outana9"};
   cout<<"plotting outana9 - case with no pi 0"<<endl;
-   */
+  TChain *t1 = new TChain("tree");
+  t1->Add(fn1);
+  t1->Add(fn0);
   TString fn{"outAna7_MINERvALE_GiBUU_test_GFSPIZEROa7nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
+   TFile *f = new TFile(fn);
+  /*
+  TString fn{"outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
+  TFile *f = new TFile(fn);
+   
+  int anaid{1};
+  int noff{2};
+  auto anatag{"outana9"};
+  cout<<"plotting outana9 - case with no pi 0"<<endl;
+  TTree *t1 = (TTree*) f->Get("tree");
+  */
+   /*
+  TString fn{"outAna7_MINERvALE_GiBUU_test_GFSPIZEROa7nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root"};
+   TFile *f = new TFile(fn);
+   
   int anaid{2};
   int noff{1};
   cout<<"plotting outana7 - case with pi 0"<<endl;
   auto anatag{"outana7"};
-
-  
-  TFile *f = new TFile(fn);
-  TFile *fout = new TFile("tmpplot.root","recreate");
   TTree *t1 = (TTree*) f->Get("tree");
+  */
+  
+  TFile *fout = new TFile("tmpplot.root","recreate");
   TCanvas *c1 = new TCanvas("c","",800,600);
   c1->Print("plot.pdf[");
 
@@ -240,7 +259,7 @@ void hist_2d_prod_no_data()
     }
     hh2d_name_lst[i] = temp_name;
     hh2d_tit_lst[i] = temp_tit;
-    cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
+    //cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
     temp_name = "";
     temp_tit = "";
   }
@@ -255,7 +274,7 @@ void hist_2d_prod_no_data()
 
     hh1d_name_lst[i] = temp_name;
     hh1d_tit_lst[i] = temp_tit;
-    cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
+    //cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
     temp_name = "";
     temp_tit = "";
   }
@@ -272,7 +291,7 @@ void hist_2d_prod_no_data()
 
     hh1d_mom_name_lst[i] = temp_name;
     hh1d_mom_tit_lst[i] = temp_tit;
-    cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
+    //cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
     temp_name = "";
     temp_tit = "";
   }
@@ -305,7 +324,7 @@ void hist_2d_prod_no_data()
       hh1d[kk*nh1d_temp+ii] = new TH1D(hh1d_name_lst[kk*nh1d_temp+ii],hh1d_tit_lst[kk*nh1d_temp+ii],60,hh1d_hist_lower_bound[ii],hh1d_hist_upper_bound[ii]);   
     }
     Double_t hh1d_mom_hist_lower_bound[] = {0,0,0,0,0,0,0,0,0,0,0,0};
-    Double_t hh1d_mom_hist_upper_bound[] = {120,10,180,4.5,180,4,180,15,2,2.5,180,180};
+    Double_t hh1d_mom_hist_upper_bound[] = {120,2.5,180,2.5,180,4,180,15,2,2.5,180,180};
     
     for(Int_t ii=0; ii<nh1d_mom_temp; ii++)
     {
@@ -395,6 +414,7 @@ void hist_2d_prod_no_data()
   cout<<"number of events : "<<nentries<<endl;
   const int nh2d = sizeof(hh2d)/sizeof(TH2D*);
   int npi_err{0};
+  double QE_xsec{0}, RES_xsec{0}, DIS_xsec{0}, a2p2h_xsec{0}, tot_xsec{0};
   for (Int_t i=0; i<nentries; i++)
   {
     t1->GetEntry(i);
@@ -402,7 +422,7 @@ void hist_2d_prod_no_data()
     Double_t hh1d_mom_var_lst[] = {scattertheta, scattermomentum, mesontheta, mesonmomentum, recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat};
         
     //if(perweight<0 && i%500==0){cout<<"weight : "<<perweight<<endl;}
-    if(i%1000000==0){cout<<"meson(pi) p : "<<mesonmomentum<<endl;}
+    if(i%1000000==0){cout<<i<<" th meson(pi) p : "<<mesonmomentum<<endl;}
     if(perweight>40){
       if(i%100==0){printf("\nAlert!!  Filling Super weight!! %d %f skiping...\n", i, perweight);}
     }
@@ -417,15 +437,18 @@ void hist_2d_prod_no_data()
       else{if(!(GeneratorUtils::GetNpi(npar)==0)){npi_err++;}}
 
       int kk{0};
+      
+      tot_xsec = tot_xsec + perweight;
 
       if(prod==1 && evtMode==1) //fil histogram bins for quasi elastic case
       {
         kk = 0;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        QE_xsec = QE_xsec + perweight;
         for(Int_t ii=0; ii<4; ii++)
         {
-          hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
+          hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);
         }
 
         for(Int_t ii=0; ii<12; ii++)
@@ -440,6 +463,7 @@ void hist_2d_prod_no_data()
         kk = 1;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        RES_xsec = RES_xsec + perweight;
         for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
@@ -455,6 +479,7 @@ void hist_2d_prod_no_data()
         kk = 2;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        DIS_xsec = DIS_xsec + perweight;
         for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
@@ -470,6 +495,7 @@ void hist_2d_prod_no_data()
         kk = 3;
         hh2d[kk*2]->Fill(xBj,Q2,perweight);
         hh2d[kk*2+1]->Fill(xBj,Wtrue,perweight);
+        a2p2h_xsec = a2p2h_xsec + perweight;
         for(Int_t ii=0; ii<4; ii++)
         {
           hh1d[kk*nh1d_temp+ii]->Fill(hh1d_var_lst[ii],perweight);;
@@ -483,6 +509,14 @@ void hist_2d_prod_no_data()
     }
   }
   cout<<" n pi err # : "<<npi_err<<endl;
+  double xsec_lst_dir[] = {QE_xsec, RES_xsec, DIS_xsec, a2p2h_xsec};
+  tot_xsec = tot_xsec/histnormFactor;
+  cout<<"direct perweight calc total xsec : "<<tot_xsec<<" cm^{2}"<<endl;
+  for(int ii=0; ii<4; ii++)
+  {
+    xsec_lst_dir[ii] = xsec_lst_dir[ii]/histnormFactor;
+    cout<<"direct perweight calc xsec for mode : "<<mode[ii]<<" is "<<xsec_lst_dir[ii]<<" cm^{2}"<<endl;
+  }
 
   Double_t temp_xsec{0};
 
