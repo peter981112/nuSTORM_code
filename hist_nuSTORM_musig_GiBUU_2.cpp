@@ -48,7 +48,7 @@ void fill_hist(TString fn, int anaid, TString Emode, double &histnormFactor
   histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*13;//Scaling to per nucleon in CH 13=1+12
 
   Double_t xBj, Q2, Wtrue, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
-    recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT;
+    recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT, perweight;
   Int_t prod,evtMode;
   t1->SetBranchAddress("xBj",&xBj);
   t1->SetBranchAddress("Q2",&Q2);
@@ -193,8 +193,8 @@ void hist_nuSTORM_musig_GiBUU_2()
   auto anatag{"outana9"};
   cout<<"plotting outana9 - case with no pi 0"<<endl;
 
-  Double_t hh1d_hist_lower_bound[] = {0,0,0.5};
-  Double_t hh1d_hist_upper_bound[] = {2,2,2};
+  Double_t hh1d_hist_lower_bound[] = {0,0,0.5,0};
+  Double_t hh1d_hist_upper_bound[] = {2,2,2,8};
 
   Double_t hh1d_mom_hist_lower_bound[] = {0,1.4,0,0,0,0.4,0,0,0,0,0,0};
   Double_t hh1d_mom_hist_upper_bound[] = {21,5.5,180,3.5,75,1.3,75,1.5,1.3,1.5,180,180};
@@ -222,7 +222,7 @@ void hist_nuSTORM_musig_GiBUU_2()
   double histnormFactor_lst[n_E];
   
   string E_modes[]={"E3","E4","E5","E6","E7"};
-  string var[] = {"x", "Q2", "W", "scatter #theta", "scatter p", 
+  string var[] = {"x", "Q2", "W", "beamE", "scatter #theta", "scatter p", 
       "meson #theta", "meson p", "recoil #theta", "recoil pm", "baryon #theta", "baryon p",
       "p_{n}", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
   string mode[] = {"QE", "RES", "DIS", "2p2h"};
@@ -254,16 +254,16 @@ void hist_nuSTORM_musig_GiBUU_2()
     temp_tit = "";
   }
 
-  TH1D *hh1d[n_E][3]; //list of 1d hist {hxQ2_E7_x, hxQ2_E7_Q2, hxQ2_E7_W}
-  TString hh1d_name_lst[n_E][3];
-  TString hh1d_tit_lst[n_E][3];
+  TH1D *hh1d[n_E][4]; //list of 1d hist {hxQ2_E7_x, hxQ2_E7_Q2, hxQ2_E7_W}
+  TString hh1d_name_lst[n_E][4];
+  TString hh1d_tit_lst[n_E][4];
   for(int i=0; i<3*n_E; i++)
   {
-    temp_name = "hxQ2 "+var[i%3]+ E_modes[i/3];
-    temp_tit = var[i%3]+" for "+ E_modes[i/3];
+    temp_name = "hxQ2 "+var[i%4]+ E_modes[i/3];
+    temp_tit = var[i%4]+" for "+ E_modes[i/3];
 
-    hh1d_name_lst[i/3][i%3] = temp_name;
-    hh1d_tit_lst[i/3][i%3] = temp_tit;
+    hh1d_name_lst[i/4][i%4] = temp_name;
+    hh1d_tit_lst[i/4][i%4] = temp_tit;
     cout<<"name : "<<temp_name<<" tit : "<<temp_tit<<endl;
     temp_name = "";
     temp_tit = "";
@@ -276,7 +276,7 @@ void hist_nuSTORM_musig_GiBUU_2()
   TString hh1d_mom_tit_lst[n_E][12];
   for(int i=0; i<12*n_E; i++)
   {
-    temp_name = "hxQ2 "+var[i%12+3]+ E_modes[i/12];
+    temp_name = "hxQ2 "+var[i%12+4]+ E_modes[i/12];
     temp_tit = var[i%12+3]+" for "+ E_modes[i/12];
 
     hh1d_mom_name_lst[i/12][i%12] = temp_name;
@@ -342,12 +342,13 @@ void hist_nuSTORM_musig_GiBUU_2()
     histnormFactor_lst[kk] = histnormFactor;
 
     
-    Double_t xBj, Q2, Wtrue, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
+    Double_t xBj, Q2, Wtrue, beamE, scattertheta, scattermomentum, mesontheta, mesonmomentum, 
       recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat, dpTT;
     Int_t prod,evtMode;
     t1->SetBranchAddress("xBj",&xBj);
     t1->SetBranchAddress("Q2",&Q2);
     t1->SetBranchAddress("Wtrue",&Wtrue);
+    t1->SetBranchAddress("beamE",&beamE);
     t1->SetBranchAddress("scattertheta",&scattertheta);
     t1->SetBranchAddress("scattermomentum",&scattermomentum);
     t1->SetBranchAddress("mesontheta",&mesontheta);
@@ -391,9 +392,9 @@ void hist_nuSTORM_musig_GiBUU_2()
 
       hh2d[kk][0]->Fill(xBj,Q2,perweight);
       hh2d[kk][1]->Fill(xBj,Wtrue,perweight);
-      Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue};
+      Double_t hh1d_var_lst[] = {xBj, Q2, Wtrue, beamE};
       Double_t hh1d_mom_var_lst[] = {scattertheta, scattermomentum, mesontheta, mesonmomentum, recoiltheta, recoilmomentum, baryontheta, baryonmomentum, IApN, dpt, dphit, dalphat};
-      for(Int_t ii=0; ii<3; ii++)
+      for(Int_t ii=0; ii<4; ii++)
       {
         hh1d[kk][ii]->Fill(hh1d_var_lst[ii],perweight);;
       }
@@ -444,6 +445,10 @@ void hist_nuSTORM_musig_GiBUU_2()
   THStack stk_W;// = new THStack;
   TLegend leg_W = TLegend(0.7, 0.5, 0.9,0.9);
   leg_W.SetFillStyle(0);
+
+  THStack stk_beamE;// = new THStack;
+  TLegend leg_beamE = TLegend(0.7, 0.5, 0.9,0.9);
+  leg_beamE.SetFillStyle(0);
     
   THStack stk_mu_theta;// = new THStack;
   TLegend leg_mu_theta = TLegend(0.13, 0.5, 0.33,0.9);
@@ -553,16 +558,16 @@ void hist_nuSTORM_musig_GiBUU_2()
   cout<<"starting 1d hist"<<endl;
   for(int ii=0; ii<nh1d; ii++){
     if(aa%4==0){++aa;};
-    histnormFactor = histnormFactor_lst[ii/3];
-    binwidth = hh1d[ii/3][ii%3]->GetXaxis()->GetBinWidth(1);
-    hh1d[ii/3][ii%3]->Scale(1/(histnormFactor*binwidth)); //to get diff cross section
-    hh1d[ii/3][ii%3]->GetXaxis()->SetTitle(tit[aa]);
-    hh1d[ii/3][ii%3]->GetYaxis()->SetTitle("differential cross section(cm^{2}/GeV/nucleon)");
+    histnormFactor = histnormFactor_lst[ii/4];
+    binwidth = hh1d[ii/4][ii%4]->GetXaxis()->GetBinWidth(1);
+    hh1d[ii/4][ii%4]->Scale(1/(histnormFactor*binwidth)); //to get diff cross section
+    hh1d[ii/4][ii%4]->GetXaxis()->SetTitle(tit[aa]);
+    hh1d[ii/4][ii%4]->GetYaxis()->SetTitle("differential cross section(cm^{2}/GeV/nucleon)");
     
     //leg->SetFillStyle(0);
-    hh1d[ii/3][ii%3]->SetLineStyle(kSolid);
-    hh1d[ii/3][ii%3]->SetLineColor(cols[ii/3]);
-    hh1d[ii/3][ii%3]->SetFillStyle(3001);
+    hh1d[ii/4][ii%4]->SetLineStyle(kSolid);
+    hh1d[ii/4][ii%4]->SetLineColor(cols[ii/4]);
+    hh1d[ii/4][ii%4]->SetFillStyle(3001);
     //hh1d[ii]->SetFillStyle(4050);//for trasparent filling
     //hh1d[ii]->SetFillColorAlpha(cols[ii/3],0.35);
 
@@ -570,19 +575,23 @@ void hist_nuSTORM_musig_GiBUU_2()
 
     //TString temp_tit="";
     //temp_tit = tit[ii*4];
-    if(ii%3==0){
-      stk_x.Add(hh1d[ii/3][ii%3]);
-      leg_x.AddEntry(hh1d[ii/3][ii%3],hh1d[ii/3][ii%3]->GetTitle(),"fl");
+    if(ii%4==0){
+      stk_x.Add(hh1d[ii/4][ii%4]);
+      leg_x.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
     }
     
-    else if(ii%3==1){
-      stk_Q2.Add(hh1d[ii/3][ii%3]);
-      leg_Q2.AddEntry(hh1d[ii/3][ii%3],hh1d[ii/3][ii%3]->GetTitle(),"fl");
+    else if(ii%4==1){
+      stk_Q2.Add(hh1d[ii/4][ii%4]);
+      leg_Q2.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
     }
 
+    else if(ii%4==2){
+      stk_W.Add(hh1d[ii/4][ii%4]);
+      leg_W.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
+    }
     else{
-      stk_W.Add(hh1d[ii/3][ii%3]);
-      leg_W.AddEntry(hh1d[ii/3][ii%3],hh1d[ii/3][ii%3]->GetTitle(),"fl");
+      stk_beamE.Add(hh1d[ii/4][ii%4]);
+      leg_beamE.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
     }
     ++aa;
   }
@@ -909,9 +918,9 @@ void hist_nuSTORM_musig_GiBUU_2()
   delete c1;
   for(int ii=0; ii<n_E; ii++)
   {
-    for(int jj; jj<2; jj++){delete hh2d[ii][jj];}
-    for(int jj; jj<3; jj++){delete hh1d[ii][jj];}
-    for(int jj; jj<12; jj++){delete hh1d_mom[ii][jj];}
+    for(int jj=0; jj<2; jj++){delete hh2d[ii][jj];}
+    for(int jj=0; jj<3; jj++){delete hh1d[ii][jj];}
+    for(int jj=0; jj<12; jj++){delete hh1d_mom[ii][jj];}
   }
   
   return;
