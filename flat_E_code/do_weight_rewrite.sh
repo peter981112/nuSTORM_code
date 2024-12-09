@@ -20,7 +20,7 @@ echo rootfile ${rootfile}
 
 
  #opt=${tag}GFSa9t1nuC;               
- nohup ./weight_rewrite_arg ${flat_E_flux_file_name} ${flux_file_name} ${rootfile}  #> see${opt}.log &
+./weight_rewrite_arg ${flat_E_flux_file_name} ${flux_file_name} ${rootfile}  #> see${opt}.log &
 
 
 date

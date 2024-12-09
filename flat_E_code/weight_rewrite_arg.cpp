@@ -22,7 +22,7 @@
 
 #include "HistIO.h"
 #include "GeneratorUtils.h"
-#include "/home/wonjong/GiBUU_2024/NuGenTKI/style/style.h"
+#include "style.h"
 
 using namespace HistIO;
 using namespace std;
@@ -77,7 +77,7 @@ vector<array<double,2>> get_flux_weight_lst(vector<array<double,2>> target_flux_
   for(int i=0; i<len; i++)
   {
     weight_lst[i][1] = weight_coeff*target_flux_vect[i][1];
-    if(i%10==0){cout<<i<<"th nu E : "<<weight_lst[i][0]<<", nu flux weight: "<<weight_lst[i][1]<<endl;}
+    //if(i%10==0){cout<<i<<"th nu E : "<<weight_lst[i][0]<<", nu flux weight: "<<weight_lst[i][1]<<endl;}
   }
   return weight_lst;
 
@@ -101,7 +101,7 @@ vector<array<double,2>> read_flux_file(string flux_file) //read text file and re
       TString tmpline(fline);
       sscanf(tmpline.Data(),"%lf	%lf", &nu_E_flux[0], &nu_E_flux[1]);
       target_flux_vect.push_back(nu_E_flux);
-      if(totlinecount%20==0){cout<<totlinecount<<"th nu E : "<<target_flux_vect[totlinecount][0]<<", nu flux : "<<target_flux_vect[totlinecount][1]<<endl;}
+      //if(totlinecount%20==0){cout<<totlinecount<<"th nu E : "<<target_flux_vect[totlinecount][0]<<", nu flux : "<<target_flux_vect[totlinecount][1]<<endl;}
       totlinecount++;
     }
     cout << "Number of lines in the file: " << totlinecount << endl;
@@ -113,25 +113,15 @@ vector<array<double,2>> read_flux_file(string flux_file) //read text file and re
 void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
 {
 
-  //string flat_E_flux_file = "flat_E_test.txt";
-  //string flux_file_E7 = "E7SpectraMuSig556Numu.txt";
-  vector<array<double,2>> target_flux_vect = read_flux_file(flux_file);
-  vector<array<double,2>> flat_E_flux_vect = read_flux_file(flat_E_flux_file);
+  vector<array<double,2>> target_flux_vect = read_flux_file(flux_file); //energy distribution file in txt
+  vector<array<double,2>> flat_E_flux_vect = read_flux_file(flat_E_flux_file); //flat energy distribution file in txt
 
   vector<array<double,2>> weight_lst = get_flux_weight_lst(target_flux_vect, flat_E_flux_vect);
 
   double test_weight_int{0};
   test_weight_int = integrate_const_interval(weight_lst);
   cout<<"weight integral : "<<test_weight_int<<endl;
-  double test_nu_E{0};
-  double test_weight{0};
-  for(int i=0; i<10; i++)
-  {
-    test_nu_E = 0.1+i*0.3;
-    cout<<i<<"th test nu E : "<<test_nu_E<<endl;
-    test_weight = get_weight(weight_lst, test_nu_E);
-    cout<<"test weight : "<<test_weight<<endl;
-  }
+
 
   int anaid{0};auto anatag{"outana"};string fn_string{fn};string flux_file_no_txt{flux_file};TString fout_name{""};//int noff;
 
@@ -141,7 +131,7 @@ void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
     anatag = "outana7";
     cout<<"rewighting "<<anatag<<" - case with pi 0"<<endl;
   }
-  else if(fn.Contains("outana9")){
+  else if(fn.Contains("outAna9")){
     anaid = 1;
     //noff = 2;
     anatag = "outana9";
@@ -166,9 +156,9 @@ void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
   flux_file_no_txt.erase(flux_file_no_txt.begin(), flux_file_no_txt.begin()+slash_index+1);//remove file path and extention .txt from the file name
   cout<<"flux_file_no_txt : "<<flux_file_no_txt<<endl;
 
-  string destination_folder{"root_target/"};
+  string destination_folder{"root_target/"}; string imitate{"_imitate"};
 
-  fout_name = destination_folder + fn_string + "_" + flux_file_no_txt + ".root";
+  fout_name = destination_folder + flux_file_no_txt + "_" + fn_string + imitate + ".root";
   cout<<"fn_string : "<<fn_string<<endl<<"flux_file_no_txt : "<<flux_file_no_txt<<endl<<"name of fout : "<<fout_name<<endl;
    /*
   TString fn_lst = outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root";
@@ -215,19 +205,24 @@ void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
   for (Int_t i=0; i<nentries; i++)
   {
     t1->GetEntry(i); 
-    if(i%200000==0){cout<<i<<"th weight : "<<perweight<<endl;}
+    if(i%1000000==0){cout<<i<<"th weight : "<<perweight<<endl;}
     nu_E_weight = get_weight(weight_lst, beamE);
-    perweight = perweight*nu_E_weight; // Make changes here 
-    if(i%200000==0){cout<<i<<"th altered weight : "<<perweight<<" with nu_E weight"<<nu_E_weight<<" at nu E : "<<beamE<<endl;}
-    new_t1->Fill();
+    if(nu_E_weight==0){perweight=0;}
+    else
+    {
+      perweight = perweight*nu_E_weight; // Make changes here 
+      if(i%1000000==0){cout<<i<<"th altered weight : "<<perweight<<" with nu_E weight"<<nu_E_weight<<" at nu E : "<<beamE<<endl;}
+      new_t1->Fill();
+    }
   }
   theader->GetEntry(0);
   new_theader->Fill();
+  /*
   if (t1->GetEntries() == new_t1->GetEntries()) {
       t1->Delete();
       theader->Delete();
   };
-
+*/
   cout<<"finished weight recalc. now writing to root file"<<endl;
   new_t1->Write();
   new_theader->Write();
