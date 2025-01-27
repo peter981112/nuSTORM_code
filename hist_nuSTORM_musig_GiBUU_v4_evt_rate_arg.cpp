@@ -4,6 +4,7 @@
 #include "TCanvas.h"
 #include "TDirectory.h"
 #include "TF1.h"
+#include "TGraphErrors.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH2D.h"
@@ -21,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include <type_traits>
+#include <cmath>
 
 #include "HistIO.h"
 #include "GeneratorUtils.h"
@@ -140,10 +142,55 @@ vector<array<double,2>> read_flux_file(string flux_file) //read text file and re
   return target_flux_vect;
 }
 
+double flux_avg(vector<array<double,2>> flux) //calculate avergave value of flux sum  int x f(x) dx/int f(x) dx form
+{
+
+  int len = flux.size();
+  vector<array<double,2>> E_nu_mult_flux;
+  array<double, 2> nu_E_flux_mult{ { 0, 0 } };
+  double avg{0};
+  double total_bincontents{0};
+
+  for (Int_t xx=0; xx<len; xx++)
+  {
+    nu_E_flux_mult = { { flux[xx][0], flux[xx][1]*flux[xx][0]} } ;//make list of  x f(x) in form of vector
+    E_nu_mult_flux.push_back(nu_E_flux_mult);
+  }
+
+  avg = integrate_const_interval(E_nu_mult_flux);
+  total_bincontents = integrate_const_interval(flux);
+
+  avg = avg/total_bincontents-(flux[1][0]-flux[0][0]);
+  return avg;
+}  
+
+double get_hist_norm_per_nucleon(TString fn)
+{
+  TFile *f = new TFile(fn);
+  TTree * theader = (TTree*) f->Get("header");
+
+  double GiBUUnormFactor=-999;
+  if(theader)
+  {
+    int tmpanr;
+    theader->SetBranchAddress("nrun", &tmpanr);
+    theader->GetEntry(0);
+    if(tmpanr>0){
+      GiBUUnormFactor=tmpanr;
+    }
+  }
+  cout<<"=================================================getting norm factor for xsec================================================="<<endl;
+  cout<<"nrun for file - "<<fn<<" is : "<<GiBUUnormFactor<<endl;
+  GiBUUnormFactor = GiBUUnormFactor*1e38;
+  cout<<" norm factor per nucleon : "<<GiBUUnormFactor<<endl;
+
+  return GiBUUnormFactor;
+}
+
 void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn, TString E6_fn, TString E7_fn, string root_file_path, 
     string E3_flux, string E4_flux, string E5_flux, string E6_flux, string E7_flux)
 {
-  
+
   TString fn_lst[] = {E3_fn, E4_fn, E5_fn, E6_fn, E7_fn};
   TString flux_lst[] = {E3_flux, E4_flux, E5_flux, E6_flux, E7_flux};
 
@@ -157,6 +204,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
 
   double amu = 1.67e-27; //mass of nucleon in kg
   double time_interval = 5.0*365*24*3600; //time interval of 5 year in sec
+  double POT_per_sec = 1.0e21; //proton on target/sec
+  double detector_mass = 1000.0; //1ton Ar detector mass
 
   Double_t hh1d_hist_lower_bound[] = {0,0,0.5,0};
   Double_t hh1d_hist_upper_bound[] = {2.1,2.5,3.2,8};
@@ -164,7 +213,7 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   Double_t hh1d_mom_hist_lower_bound[] = {0,0,0,0,0,0,0,0,0,0,0,0};
   Double_t hh1d_mom_hist_upper_bound[] = {180,5.5,180,3,180,3.5,180,5,1.7,1.6,180,180};
 
-  int anaid{0};auto anatag{"outana"};string fn_string{fn_lst[0]};TString pdf_out_name{""};//int noff{0}
+  int anaid{0};auto anatag{"outana"};string fn_string{fn_lst[0]};TString pdf_out_name{""};string nu_mode{""};//int noff{0}
 
   if(fn_lst[0].Contains("outAna7")){
     anaid = 2;
@@ -172,8 +221,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     anatag = "outana7";
     cout<<"rewighting "<<anatag<<" - case with pi 0"<<endl;
 
-    if(fn_lst[0].Contains("Numu") || fn_lst[0].Contains("numu") ||fn_lst[0].Contains("munu")){pdf_out_name = "plot_numu_outana7.pdf";}
-    else{pdf_out_name = "plot_nue_outana7.pdf";}
+    if(fn_lst[0].Contains("Numu") || fn_lst[0].Contains("numu") ||fn_lst[0].Contains("munu")){pdf_out_name = "plot_numu_outana7.pdf";nu_mode="#nu_{#mu}";}
+    else{pdf_out_name = "plot_nue_outana7.pdf";nu_mode="#nu_{e}";}
   }
   else if(fn_lst[0].Contains("outAna9")){
     anaid = 1;
@@ -181,9 +230,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     anatag = "outana9";
     cout<<"rewighting "<<anatag<<" - case with no pi 0"<<endl;
 
-    if(fn_lst[0].Contains("Numu") || fn_lst[0].Contains("numu") ||fn_lst[0].Contains("munu")){pdf_out_name = "plot_numu_outana9.pdf";}
-    else{pdf_out_name = "plot_nue_outana9.pdf";}
-
+    if(fn_lst[0].Contains("Numu") || fn_lst[0].Contains("numu") ||fn_lst[0].Contains("munu")){pdf_out_name = "plot_numu_outana9.pdf";nu_mode="#nu_{#mu}";}
+    else{pdf_out_name = "plot_nue_outana9.pdf";nu_mode="#nu_{e}";}
   }
   
   pdf_out_name = root_file_path + pdf_out_name;
@@ -195,17 +243,23 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   TString start_pdf_out_name = pdf_out_name + "[";
   c1->Print(start_pdf_out_name);
 
-  double flux_int_lst[n_E]={0};
-  for(int i=0; i<n_E; i++){flux_int_lst[i] = integrate_const_interval(target_flux_vect_lst[i]);}
-
-  double histnormFactor_lst[n_E];
-  
   string E_modes[]={"E3","E4","E5","E6","E7"};
   string var[] = {"x", "Q2", "W", "beamE", "scatter #theta", "scatter p", 
       "meson #theta", "meson p", "recoil #theta", "recoil pm", "baryon #theta", "baryon p",
       "p_{n}", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
   string mode[] = {"QE", "RES", "DIS", "2p2h"};
   const Int_t nmode = sizeof(mode)/sizeof(string);
+
+  double flux_int_lst[n_E]={0};
+  double flux_avg_lst[n_E]={0};
+  for(int i=0; i<n_E; i++)
+  {
+    flux_int_lst[i] = integrate_const_interval(target_flux_vect_lst[i]);
+    flux_avg_lst[i] = flux_avg(target_flux_vect_lst[i]);
+    E_modes[i]=to_string(flux_avg_lst[i])+" GeV "+nu_mode;  
+  }
+
+  double histnormFactor_lst[n_E];
   const int hh2d_var_num{3}, hh1d_var_num{4}, hh1d_mom_var_num{12};
 
   TString temp_name = "";
@@ -320,9 +374,10 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     int nuPDG, tarA;
     const TString gen = GeneratorUtils::SetEnv(fn_lst[kk], nuExp, nuPDG, tarA);
     //const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*13;cout<<"scaling 1/13 for CH"<<endl//Scaling to per nucleon in CH 13=1+12
-    const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*12;cout<<"scaling 1/12 for Carbon target"<<endl;//Scaling to per nucleon in Carbon 12
+    //const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*12;cout<<"scaling 1/12 for Carbon target"<<endl;//Scaling to per nucleon in Carbon 12
     //const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*18;cout<<"scaling 1/18 for H2O"<<endl;//Scaling to per nucleon in H2O 18=2+16
     //const double histnormFactor = GeneratorUtils::GetHistNormPerNucleus(f, nuPDG, tarA, gen, anaid)*16;cout<<"scaling 1/16 for Oxygen target"<<endl;//Scaling to per nucleon in Oxygen 16
+    const double histnormFactor = get_hist_norm_per_nucleon(fn);
     histnormFactor_lst[kk] = histnormFactor;
 
     
@@ -390,13 +445,13 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
       }
 
 
-      if(prod==1 && evtMode==1){xsec_lst[kk][0] = xsec_lst[kk][0]+perweight;} //add weight to get xsec for QE
+      if(evtMode==1){xsec_lst[kk][0] = xsec_lst[kk][0]+perweight;} //add weight to get xsec for QE  prod==1 && 
 
-      else if(prod>=2 && prod<=33 && evtMode==2){xsec_lst[kk][1] = xsec_lst[kk][1]+perweight;} //add weight to get xsec for RES
+      else if(evtMode==2){xsec_lst[kk][1] = xsec_lst[kk][1]+perweight;} //add weight to get xsec for RES  prod>=2 && prod<=33 && 
 
-      else if(prod==34 && evtMode==3){xsec_lst[kk][2] = xsec_lst[kk][2]+perweight;} //add weight to get xsec for DIS
+      else if(evtMode==3){xsec_lst[kk][2] = xsec_lst[kk][2]+perweight;} //add weight to get xsec for DIS  prod==34 && 
 
-      else if(prod==35 && evtMode==4){xsec_lst[kk][3] = xsec_lst[kk][3]+perweight;} //add weight to get xsec for 2p2h
+      else if(evtMode==4){xsec_lst[kk][3] = xsec_lst[kk][3]+perweight;} //add weight to get xsec for 2p2h  prod==35 && 
       
     }
     cout<<" n pi err # : "<<npi_err<<endl;
@@ -414,9 +469,10 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   {
     for(int ii=0; ii<nmode; ++ii)
     {
+      cout<<"perweight sum : "<<xsec_lst[kk][ii];
       xsec_lst[kk][ii] = xsec_lst[kk][ii]/histnormFactor_lst[kk];
       total_xsec = total_xsec + xsec_lst[kk][ii];
-      cout<<"xsec of "<<E_modes[kk]<<" mode : "<<mode[ii]<<" is "<<xsec_lst[kk][ii]<<" cm^{2}"<<endl;
+      cout<<" xsec of "<<E_modes[kk]<<" mode : "<<mode[ii]<<" is "<<xsec_lst[kk][ii]<<" cm^{2}"<<endl;
     }
     cout<<"total xsec of "<<E_modes[kk]<<" is "<<total_xsec<<" cm^{2}"<<endl;
     total_xsec_lst[kk] = total_xsec;
@@ -430,20 +486,29 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   {
     for(int ii=0; ii<nmode; ++ii)
     {
-      event_num_lst[kk][ii] = xsec_lst[kk][ii]*time_interval*flux_int_lst[kk]/amu;
-      cout<<"event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years for mode : "
-        <<mode[ii]<<" is "<<event_num_lst[kk][ii]<<" event /POT * kg"<<endl;
+      event_num_lst[kk][ii] = xsec_lst[kk][ii]*time_interval*POT_per_sec*detector_mass*flux_int_lst[kk]/amu;
+      cout<<"event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years with detector mass "<<detector_mass/1000<<" ton and "<<POT_per_sec
+      <<" POT/sec for mode : "<<mode[ii]<<" is "<<event_num_lst[kk][ii]<<" event"<<endl;
     }
-    total_event_num_lst[kk] = total_xsec_lst[kk]*time_interval*flux_int_lst[kk]/amu;
-    cout<<"total event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years : "<<total_event_num_lst[kk]<<" event /POT * kg"<<endl;
+    total_event_num_lst[kk] = total_xsec_lst[kk]*time_interval*POT_per_sec*detector_mass*flux_int_lst[kk]/amu;
+    cout<<"total event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years with detector mass "<<detector_mass/1000<<" ton and "<<POT_per_sec
+      <<" POT/sec for : "<<total_event_num_lst[kk]<<" event"<<endl;
   }
+
+  Double_t xsec_plot_E_nu[n_E+1] = {0}; //starts from 0 to have (0,0) as starting point
+  Double_t xsec_plot_xsec[n_E+1] = {0};
+  Double_t xsec_plot_E_nu_err[n_E+1] = {0};
+  Double_t xsec_plot_xsec_err[n_E+1] = {0};
 
   cout<<"now printing cross section formatted for plotting in path : "<<root_file_path<<endl;
 
   cout<<"total xsec [";
   for(int ii=0; ii<n_E; ++ii)
   {
-    cout<<total_xsec_lst[ii]<<", ";
+    xsec_plot_xsec[ii+1] = total_xsec_lst[ii]; //xsec list
+    xsec_plot_E_nu[ii+1] = flux_avg_lst[ii]; //E_nu list
+    if(ii<n_E-1){cout<<total_xsec_lst[ii]<<", ";}
+    else{cout<<total_xsec_lst[ii];}
   }
   cout<<"] "<<endl;
 
@@ -452,16 +517,19 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     cout<<"xsec of "<<mode[ii]<<" [";
     for(int kk=0; kk<n_E; ++kk)
     {
-      cout<<xsec_lst[kk][ii]<<", ";
+      if(kk<n_E-1){cout<<xsec_lst[kk][ii]<<", ";}
+      else{cout<<xsec_lst[kk][ii];}
     }
     cout<<"] "<<endl;
   }
 
-  cout<<"event num units in : event /POT * kg"<<endl;
+  cout<<"event num units in : event "<<endl;///POT * kg"<<endl;
   cout<<"total event num [";
   for(int ii=0; ii<n_E; ++ii)
   {
-    cout<<total_event_num_lst[ii]<<", ";
+    xsec_plot_xsec_err[ii+1] = xsec_plot_xsec[ii+1]*pow((1/total_event_num_lst[ii]+pow(0.1,2.0)),0.5); //10% flux uncertainty
+    if(ii<n_E-1){cout<<total_event_num_lst[ii]<<", ";}
+    else{cout<<total_event_num_lst[ii];}
   }
   cout<<"] "<<endl;
 
@@ -470,11 +538,19 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     cout<<"event num of "<<mode[ii]<<" [";
     for(int kk=0; kk<n_E; ++kk)
     {
-      cout<<event_num_lst[kk][ii]<<", ";
+      if(kk<n_E-1){cout<<event_num_lst[kk][ii]<<", ";}
+      else{cout<<event_num_lst[kk][ii];}
     }
     cout<<"] "<<endl;
   }
 
+  TGraphErrors *gr = new TGraphErrors(n_E+1,xsec_plot_E_nu,xsec_plot_xsec,xsec_plot_E_nu_err,xsec_plot_xsec_err);
+  gr->SetTitle("xsec and err");
+  gr->SetMarkerColor(4);
+  gr->SetMarkerStyle(21);
+  gr->Draw("ALP");
+  c1->Print(pdf_out_name,"xsec and err");
+  c1->Print(Form("png/%s_%s.png", anatag, "xsec and err"));
 
   THStack stk_x;// = new THStack;
   TLegend leg_x = TLegend(0.7, 0.5, 0.9,0.9);
@@ -735,6 +811,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
 
 
   const TString opt_same="same hist";
+  const TString opt_smooth="histC nostack";
+  const TString opt_error_band="histL nostack E4";
   const TString opt_err_bar="X1 E0";
   const TString opt_err_bar_same="same X1 E0";
   const TString opt_nostack="hist nostack";
@@ -771,7 +849,7 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   for(int ii=0; ii<n_stk; ii++)
   {
     //cout<<"test for loop ii : "<<ii<<endl;
-    stk_lst[ii].Draw(opt_nostack);
+    stk_lst[ii].Draw(opt_smooth);
     stk_lst[ii].GetXaxis()->SetTitle(tit_lst[ii][0].c_str());
     stk_lst[ii].GetYaxis()->SetTitle(tit_lst[ii][1].c_str());
     stk_lst[ii].SetTitle(tit_lst[ii][2].c_str());
