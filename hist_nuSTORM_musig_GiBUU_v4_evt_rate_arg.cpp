@@ -18,6 +18,8 @@
 #include "TSystem.h"
 #include "TAxis.h"
 #include "TTree.h"
+#include "TColor.h"
+#include "TMultiGraph.h"
 
 #include <iostream>
 #include <string>
@@ -115,6 +117,22 @@ double integrate_const_interval(vector<array<double,2>> flux) //integrate a 1d f
 
 }
 
+double integrate_2501v1_nuSTORM_flux(vector<array<double,2>> flux) //integrate nuSTORM 2501v1 flux unit nu/m2/50MeV/1e21POT
+{
+
+  double integrate_result{0};
+  int len = flux.size();
+  double int_coeff[3] {3/8, 7/6, 23/24};
+  integrate_result = integrate_result + int_coeff[0]*(flux[0][1]+flux[len-1][1])+ int_coeff[1]*(flux[1][1]+flux[len-2][1])+ int_coeff[2]*(flux[2][1]+flux[len-3][1]);
+  for(int i=3; i<len-3; i++)
+  {
+    integrate_result = integrate_result + flux[i][1];
+  }
+  integrate_result = integrate_result*1e-4;//convert per m^2 to cm^2
+  return integrate_result;//unit of nu/(cm^2*10^21POT)
+
+}
+
 vector<array<double,2>> read_flux_file(string flux_file) //read text file and return a vector with elements {double, double}->{nu_E, nu_flux}
 {
 
@@ -160,7 +178,7 @@ double flux_avg(vector<array<double,2>> flux) //calculate avergave value of flux
   avg = integrate_const_interval(E_nu_mult_flux);
   total_bincontents = integrate_const_interval(flux);
 
-  avg = avg/total_bincontents-(flux[1][0]-flux[0][0]);
+  avg = avg/total_bincontents;//-(flux[1][0]-flux[0][0]);
   return avg;
 }  
 
@@ -187,23 +205,25 @@ double get_hist_norm_per_nucleon(TString fn)
   return GiBUUnormFactor;
 }
 
-void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn, TString E6_fn, TString E7_fn, string root_file_path, 
-    string E3_flux, string E4_flux, string E5_flux, string E6_flux, string E7_flux)
+void hist_nuSTORM_musig_GiBUU_v4_arg(TString nuFlux1p52_fn, TString nuFlux2p0_fn, TString nuFlux3p04_fn, TString nuFlux3p8_fn, TString nuFlux4p56_fn, TString nuFlux5p47_fn,
+    string root_file_path, 
+    string nuFlux1p52_flux, string nuFlux2p0_flux, string nuFlux3p04_flux, string nuFlux3p8_flux, string nuFlux4p56_flux, string nuFlux5p47_flux)
 {
 
-  TString fn_lst[] = {E3_fn, E4_fn, E5_fn, E6_fn, E7_fn};
-  TString flux_lst[] = {E3_flux, E4_flux, E5_flux, E6_flux, E7_flux};
+  TString fn_lst[] = {nuFlux1p52_fn, nuFlux2p0_fn, nuFlux3p04_fn, nuFlux3p8_fn, nuFlux4p56_fn, nuFlux5p47_fn};
+  TString flux_lst[] = {nuFlux1p52_flux, nuFlux2p0_flux, nuFlux3p04_flux, nuFlux3p8_flux, nuFlux4p56_flux, nuFlux5p47_flux};
 
   cout<<"root files for plotting"<<endl;
-  for(int i=0;i<5;i++){cout<<i<<" th root file : "<<fn_lst[i]<<endl;}
+  for(int i=0;i<6;i++){cout<<i<<" th root file : "<<fn_lst[i]<<endl;}
 
   cout<<"flux files for event rate"<<endl;
-  for(int i=0;i<5;i++){cout<<i<<" th flux file : "<<flux_lst[i]<<endl;}
+  for(int i=0;i<6;i++){cout<<i<<" th flux file : "<<flux_lst[i]<<endl;}
 
-  vector<array<double,2>> target_flux_vect_lst[] = {read_flux_file(E3_flux), read_flux_file(E4_flux),read_flux_file(E5_flux),read_flux_file(E6_flux),read_flux_file(E7_flux)};
+  vector<array<double,2>> target_flux_vect_lst[] = {read_flux_file(nuFlux1p52_flux), read_flux_file(nuFlux2p0_flux),read_flux_file(nuFlux3p04_flux)
+    ,read_flux_file(nuFlux3p8_flux),read_flux_file(nuFlux4p56_flux),read_flux_file(nuFlux5p47_flux)};
 
   double amu = 1.67e-27; //mass of nucleon in kg
-  double time_interval = 5.0*365*24*3600; //time interval of 5 year in sec
+  //double time_interval = 5.0*365*24*3600; //time interval of 5 year in sec
   double POT_per_sec = 1.0e21; //proton on target/sec
   double detector_mass = 1000.0; //1ton Ar detector mass
 
@@ -238,15 +258,25 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   cout<<" pdf_out_name : "<<pdf_out_name<<endl;
   
   const Int_t n_E = sizeof(fn_lst)/sizeof(TString);
-  TCanvas *c1 = new TCanvas("c","",800,600);
+  TCanvas *c1 = new TCanvas("c","", 1200, 800);
+  style::PadSetup(c1);
+  style::SetGlobalStyle();
+
+  //const bool kthin=false;
+  style::fgkTextSize = 0.03;
+  //style::fgkTitleSize = 0.07;
+  style::fgkYTitleOffset = 1.2;//kthin?1.08:0.75;
+  style::fgkXTitleOffset = 1.1;
+
+
   TFile *fout = new TFile("tmpplot.root","recreate");
   TString start_pdf_out_name = pdf_out_name + "[";
   c1->Print(start_pdf_out_name);
 
-  string E_modes[]={"E3","E4","E5","E6","E7"};
-  string var[] = {"x", "Q2", "W", "beamE", "scatter #theta", "scatter p", 
+  string E_modes[]={"1.52","2.00","3.04","3.80","4.56", "5.47"};//"nuFlux1p52","nuFlux2p0","nuFlux3p04","nuFlux3p8","nuFlux4p56", "nuFlux5p47"
+  string var[] = {"x", "Q2", "W", "E_{#nu}", "scatter #theta", "scatter p", 
       "meson #theta", "meson p", "recoil #theta", "recoil pm", "baryon #theta", "baryon p",
-      "p_{n}", "dp_{t}", "d#phi_{t}", "d#alpha_{t}"};
+      "p_{n}", "dp_{t}", "d#phi_{t}", "#delta#alpha_{t}"};
   string mode[] = {"QE", "RES", "DIS", "2p2h"};
   const Int_t nmode = sizeof(mode)/sizeof(string);
 
@@ -254,9 +284,9 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   double flux_avg_lst[n_E]={0};
   for(int i=0; i<n_E; i++)
   {
-    flux_int_lst[i] = integrate_const_interval(target_flux_vect_lst[i]);
+    flux_int_lst[i] = integrate_2501v1_nuSTORM_flux(target_flux_vect_lst[i]);//unit of nu/(cm^2*10^21POT) for 2501v1 version flux
     flux_avg_lst[i] = flux_avg(target_flux_vect_lst[i]);
-    E_modes[i]=to_string(flux_avg_lst[i])+" GeV "+nu_mode;  
+    //E_modes[i]=to_string(flux_avg_lst[i])+" GeV";//+nu_mode;  
   }
 
   double histnormFactor_lst[n_E];
@@ -297,7 +327,9 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   for(int i=0; i<hh1d_var_num*n_E; i++)
   {
     temp_name = "hxQ2 "+var[i%hh1d_var_num]+ E_modes[i/hh1d_var_num];
-    temp_tit = var[i%hh1d_var_num]+" for "+ E_modes[i/hh1d_var_num];
+    //temp_tit = var[i%hh1d_var_num]+" for "+ E_modes[i/hh1d_var_num];
+    temp_tit = E_modes[i/hh1d_var_num];
+
 
     hh1d_name_lst[i/hh1d_var_num][i%hh1d_var_num] = temp_name;
     hh1d_tit_lst[i/hh1d_var_num][i%hh1d_var_num] = temp_tit;
@@ -312,7 +344,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   for(int i=0; i<hh1d_mom_var_num*n_E; i++)
   {
     temp_name = "hxQ2 "+var[i%hh1d_mom_var_num+hh1d_var_num]+ E_modes[i/hh1d_mom_var_num];
-    temp_tit = var[i%hh1d_mom_var_num+hh1d_var_num]+" for "+ E_modes[i/hh1d_mom_var_num];
+    //temp_tit = var[i%hh1d_mom_var_num+hh1d_var_num]+" for "+ E_modes[i/hh1d_mom_var_num];
+    temp_tit = E_modes[i/hh1d_mom_var_num];
 
     hh1d_mom_name_lst[i/hh1d_mom_var_num][i%hh1d_mom_var_num] = temp_name;
     hh1d_mom_tit_lst[i/hh1d_mom_var_num][i%hh1d_mom_var_num] = temp_tit;
@@ -329,7 +362,9 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   cout<<"mom array len : "<<nh1d_mom<<endl;
   const int nh2d = sizeof(hh2d)/sizeof(TH2D*);
 
-  const Int_t cols[]={kRed-3, kBlue, kGreen+3, kOrange, kViolet+3};
+  //const Int_t cols[]={kRed-3, kBlue, kGreen+3, kOrange, kViolet+3, kCyan};
+  //const Int_t cols[]={kP8Pink, kP8Green, kP8Blue, kP10Violet, kP8Azure, kP8Cyan, kP10Yellow};
+  const Int_t cols[]={kOrange-2, kCyan-7, kBlue-4, kViolet-3, kGreen+3, kPink+9};
 
   for(Int_t kk=0; kk<n_E; kk++)
   {
@@ -352,7 +387,7 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     leg->SetFillStyle(0);
     //leg->SetBorderSize(0);
     leg->SetTextFont(42);
-    leg->SetTextSize(0.023);
+    leg->SetTextSize(0.022);
     gStyle-> SetOptStat(0); // turn off stat box
     gStyle->SetPadRightMargin(0.2);
     gStyle->SetPadLeftMargin(0.1);
@@ -486,19 +521,22 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   {
     for(int ii=0; ii<nmode; ++ii)
     {
-      event_num_lst[kk][ii] = xsec_lst[kk][ii]*time_interval*POT_per_sec*detector_mass*flux_int_lst[kk]/amu;
-      cout<<"event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years with detector mass "<<detector_mass/1000<<" ton and "<<POT_per_sec
-      <<" POT/sec for mode : "<<mode[ii]<<" is "<<event_num_lst[kk][ii]<<" event"<<endl;
+      event_num_lst[kk][ii] = xsec_lst[kk][ii]*detector_mass*flux_int_lst[kk]/amu;
+      cout<<"event num of "<<E_modes[kk]<<" with "<<POT_per_sec<<" POT with detector mass "<<detector_mass/1000
+        <<" ton for mode : "<<mode[ii]<<" is "<<event_num_lst[kk][ii]<<" event"<<endl;
     }
-    total_event_num_lst[kk] = total_xsec_lst[kk]*time_interval*POT_per_sec*detector_mass*flux_int_lst[kk]/amu;
-    cout<<"total event num of "<<E_modes[kk]<<" in "<<time_interval/(365*24*3600)<<" years with detector mass "<<detector_mass/1000<<" ton and "<<POT_per_sec
-      <<" POT/sec for : "<<total_event_num_lst[kk]<<" event"<<endl;
+    total_event_num_lst[kk] = total_xsec_lst[kk]*detector_mass*flux_int_lst[kk]/amu;
+    cout<<"flux for "<<E_modes[kk]<<" is "<<flux_int_lst[kk]<<" #nu/(cm^2*10^21POT)"<<endl;
+    cout<<"total event num of "<<E_modes[kk]<<" with "<<POT_per_sec<<" POT with detector mass "<<detector_mass/1000
+      <<" ton for : "<<total_event_num_lst[kk]<<" event"<<endl;
   }
 
   Double_t xsec_plot_E_nu[n_E+1] = {0}; //starts from 0 to have (0,0) as starting point
   Double_t xsec_plot_xsec[n_E+1] = {0};
   Double_t xsec_plot_E_nu_err[n_E+1] = {0};
-  Double_t xsec_plot_xsec_err[n_E+1] = {0};
+  Double_t xsec_plot_xsec_err_10per[n_E+1] = {0};
+  Double_t xsec_plot_xsec_err_1per[n_E+1] = {0};
+
 
   cout<<"now printing cross section formatted for plotting in path : "<<root_file_path<<endl;
 
@@ -527,7 +565,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   cout<<"total event num [";
   for(int ii=0; ii<n_E; ++ii)
   {
-    xsec_plot_xsec_err[ii+1] = xsec_plot_xsec[ii+1]*pow((1/total_event_num_lst[ii]+pow(0.1,2.0)),0.5); //10% flux uncertainty
+    xsec_plot_xsec_err_10per[ii+1] = xsec_plot_xsec[ii+1]*pow((1/total_event_num_lst[ii]+pow(0.1,2.0)),0.5); //10% flux uncertainty
+    xsec_plot_xsec_err_1per[ii+1] = xsec_plot_xsec[ii+1]*pow((1/total_event_num_lst[ii]+pow(0.01,2.0)),0.5); //1% flux uncertainty
     if(ii<n_E-1){cout<<total_event_num_lst[ii]<<", ";}
     else{cout<<total_event_num_lst[ii];}
   }
@@ -543,78 +582,129 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     }
     cout<<"] "<<endl;
   }
+  //TMultiGraph *mg = new TMultiGraph();
+  //mg->SetTitle("xsec and err");
+  //mg->GetXaxis()->SetTitle("neutrino energy(GeV)");
+  //mg->GetYaxis()->SetTitle("#sigma(cm^{2})");
+  TGraphErrors *gr_10per = new TGraphErrors(n_E+1,xsec_plot_E_nu,xsec_plot_xsec,xsec_plot_E_nu_err,xsec_plot_xsec_err_10per);
+  TGraphErrors *gr_1per = new TGraphErrors(n_E+1,xsec_plot_E_nu,xsec_plot_xsec,xsec_plot_E_nu_err,xsec_plot_xsec_err_1per);
+  TLegend *xsec_plot_legend = new TLegend(0.14, 0.65, 0.32, 0.88);
+  TString xsec_plot_Yaxis_title{""};
+  gr_10per->SetTitle("10% unc. flux");
+  gr_10per->GetXaxis()->SetTitle("E_{#nu}(GeV)");
+  xsec_plot_Yaxis_title = nu_mode + " #sigma_{CC}(cm^{2}/nucleon)";
+  gr_10per->GetYaxis()->SetTitle(xsec_plot_Yaxis_title);
+  gr_10per->SetMarkerColor(0);
+  gr_10per->SetMarkerStyle(0);
+  gr_10per->SetLineWidth(0);
+  gr_10per->SetFillColor(kGreen);
+  gr_10per->SetFillStyle(1001);
+  xsec_plot_legend->AddEntry(gr_10per,"HiResM#nu @ 10% unc. flux");
+  //gr_10per->Draw("ac4");
 
-  TGraphErrors *gr = new TGraphErrors(n_E+1,xsec_plot_E_nu,xsec_plot_xsec,xsec_plot_E_nu_err,xsec_plot_xsec_err);
-  gr->SetTitle("xsec and err");
-  gr->SetMarkerColor(4);
-  gr->SetMarkerStyle(21);
-  gr->Draw("ALP");
+  gr_1per->SetTitle("1% unc. flux");
+  gr_1per->SetMarkerColor(0);
+  gr_1per->SetMarkerStyle(0);
+  gr_1per->SetLineWidth(0);
+  gr_1per->SetFillColor(kYellow);
+  gr_1per->SetFillStyle(1001);
+  xsec_plot_legend->AddEntry(gr_1per,"HiResM#nu @ 1% unc. flux");
+
+  //mg->Add(gr_10per);
+  //mg->Add(gr_1per);
+  //mg->GetXaxis()->SetLimits(0,3);
+  //mg->GetYaxis()->SetLimits(0,1e-38);
+  //mg->Draw("ALP");
+  gr_10per->Draw("ac3");
+  gr_1per->Draw("same c3");
+  xsec_plot_legend->Draw();
+  xsec_plot_legend->SetTextAlign(12);
+  xsec_plot_legend->SetTextSize(0.03);
+  xsec_plot_legend->SetMargin(0.15);
   c1->Print(pdf_out_name,"xsec and err");
   c1->Print(Form("png/%s_%s.png", anatag, "xsec and err"));
 
+  TH1D *h2 = new TH1D;//empty hist legend entry so legend header doesn't overlap with legend entries
+  double legend_x1{0.6}, legend_y1{0.45}, legend_x2{0.78}, legend_y2{0.88};
   THStack stk_x;// = new THStack;
-  TLegend leg_x = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_x = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_x.SetFillStyle(0);
+  leg_x.AddEntry(h2,"","");//add empty legend entry so legend header doesn't overlap with legend entries
     
   THStack stk_Q2;// = new THStack;
-  TLegend leg_Q2 = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_Q2 = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_Q2.SetFillStyle(0);
+  leg_Q2.AddEntry(h2,"","");
   
   THStack stk_W;// = new THStack;
-  TLegend leg_W = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_W = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_W.SetFillStyle(0);
+  leg_W.AddEntry(h2,"","");
 
   THStack stk_beamE;// = new THStack;
-  TLegend leg_beamE = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_beamE = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_beamE.SetFillStyle(0);
+  leg_beamE.AddEntry(h2,"","");
     
   THStack stk_mu_theta;// = new THStack;
-  TLegend leg_mu_theta = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_mu_theta = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_mu_theta.SetFillStyle(0);
+  leg_mu_theta.AddEntry(h2,"","");
     
   THStack stk_mu_mom;// = new THStack;
-  TLegend leg_mu_mom = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_mu_mom = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_mu_mom.SetFillStyle(0);
+  leg_mu_mom.AddEntry(h2,"","");
 
   THStack stk_pi_theta;// = new THStack;
-  TLegend leg_pi_theta = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_pi_theta = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_pi_theta.SetFillStyle(0);
+  leg_pi_theta.AddEntry(h2,"","");
     
   THStack stk_pi_mom;// = new THStack;
-  TLegend leg_pi_mom = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_pi_mom = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_pi_mom.SetFillStyle(0);
+  leg_pi_mom.AddEntry(h2,"","");
 
   THStack stk_recoil_theta;// = new THStack;
-  TLegend leg_recoil_theta = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_recoil_theta = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_recoil_theta.SetFillStyle(0);
+  leg_recoil_theta.AddEntry(h2,"","");
     
   THStack stk_recoil_mom;// = new THStack;
-  TLegend leg_recoil_mom = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_recoil_mom = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_recoil_mom.SetFillStyle(0);
+  leg_recoil_mom.AddEntry(h2,"","");
 
   THStack stk_baryon_theta;// = new THStack;
-  TLegend leg_baryon_theta = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_baryon_theta = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_baryon_theta.SetFillStyle(0);
+  leg_baryon_theta.AddEntry(h2,"","");
     
   THStack stk_baryon_mom;// = new THStack;
-  TLegend leg_baryon_mom = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_baryon_mom = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_baryon_mom.SetFillStyle(0);
+  leg_baryon_mom.AddEntry(h2,"","");
 
   THStack stk_neutron_mom;// = new THStack;
-  TLegend leg_neutron_mom = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_neutron_mom = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_neutron_mom.SetFillStyle(0);
+  leg_neutron_mom.AddEntry(h2,"","");
   
   THStack stk_dpt;// = new THStack;
-  TLegend leg_dpt = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_dpt = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_dpt.SetFillStyle(0);
+  leg_dpt.AddEntry(h2,"","");
 
   THStack stk_dphit;// = new THStack;
-  TLegend leg_dphit = TLegend(0.7, 0.5, 0.9,0.9);
+  TLegend leg_dphit = TLegend(legend_x1, legend_y1, legend_x2, legend_y2);
   leg_dphit.SetFillStyle(0);
+  leg_dphit.AddEntry(h2,"","");
   
   THStack stk_dalphat;// = new THStack;
-  TLegend leg_dalphat = TLegend(0.13, 0.5, 0.33,0.9);
+  TLegend leg_dalphat = TLegend(0.14, legend_y1, 0.32, legend_y2);
   leg_dalphat.SetFillStyle(0);
+  leg_dalphat.AddEntry(h2,"","");
 
 
   int normal_choice{1}; //if 0 just remove negative cross section if 1 do column normalization
@@ -682,18 +772,22 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   Double_t binwidth{0};
   cout<<"starting 1d hist"<<endl;
 
-  for(int ii=0; ii<nh1d; ii++){
+  for(int ii=nh1d-1; ii>=0; ii--){
     if(aa%4==0){++aa;};
     histnormFactor = histnormFactor_lst[ii/hh1d_var_num];
     binwidth = hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->GetXaxis()->GetBinWidth(1);
     hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->Scale(1/(histnormFactor*binwidth)); //to get diff cross section
+    style::ResetStyle(hh1d[ii/hh1d_var_num][ii%hh1d_var_num]);
     //hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->GetXaxis()->SetTitle(tit[aa]);
     hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->GetYaxis()->SetTitle("differential cross section(cm^{2}/GeV/nucleon)");
     
     //leg->SetFillStyle(0);
     hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetLineStyle(kSolid);
-    hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetLineColor(cols[ii/4]);
-    hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetFillStyle(3001);
+    hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetLineColor(style::GetColor(cols[ii/4]));
+    hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetLineWidth(2); 
+    //hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetFillStyle(1001);
+    //hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetFillColor(cols[ii/4]);
+    //hh1d[ii/hh1d_var_num][ii%hh1d_var_num]->SetFillStyle(3001);
     //hh1d[ii]->SetFillStyle(4050);//for trasparent filling
     //hh1d[ii]->SetFillColorAlpha(cols[ii/3],0.35);
 
@@ -704,20 +798,24 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
     if(ii%hh1d_var_num==0){
       stk_x.Add(hh1d[ii/4][ii%4]);
       leg_x.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
+      //leg_x.SetHeader("GiBUU");
     }
     
     else if(ii%hh1d_var_num==1){
       stk_Q2.Add(hh1d[ii/4][ii%4]);
       leg_Q2.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
+      //leg_Q2.SetHeader("GiBUU");
     }
 
     else if(ii%hh1d_var_num==2){
       stk_W.Add(hh1d[ii/4][ii%4]);
       leg_W.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
+      //leg_W.SetHeader("GiBUU");
     }
     else{
       stk_beamE.Add(hh1d[ii/4][ii%4]);
       leg_beamE.AddEntry(hh1d[ii/4][ii%4],hh1d[ii/4][ii%4]->GetTitle(),"fl");
+      //leg_beamE.SetHeader("GiBUU");
     }
     ++aa;
   }
@@ -725,16 +823,20 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   //binwidth = 0;
     
   int count_num{hh1d_mom_var_num};
-  for(int ii=0; ii<nh1d_mom; ii++)
+  for(int ii=nh1d_mom-1; ii>=0; ii--)
   {
     histnormFactor = histnormFactor_lst[ii/hh1d_mom_var_num];
     diff_xsec(hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num], histnormFactor);
+    style::ResetStyle(hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]);
     hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->GetYaxis()->SetTitle("differential cross section(cm^{2}/GeV/nucleon)");
     
     //leg->SetFillStyle(0);
     hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetLineStyle(kSolid);
-    hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetLineColor(cols[ii/count_num]);
-    hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetFillStyle(3001);
+    hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetLineColor(style::GetColor(cols[ii/count_num]));
+    hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetLineWidth(2);
+    //hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetFillStyle(1001);
+    //hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetFillColor(cols[ii/count_num]);
+    //hh1d_mom[ii/hh1d_mom_var_num][ii%hh1d_mom_var_num]->SetFillStyle(3001);
     //hh1d_mom[ii]->SetFillStyle(4050);
     //hh1d_mom[ii]->SetFillColorAlpha(cols[ii/count_num],0.35);
     //cout<<"title : "<<hh1d_mom[ii]->GetTitle()<<endl;
@@ -826,37 +928,69 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
   const int n_stk = sizeof(stk_lst)/sizeof(THStack);
   cout<<"n_stk : "<<n_stk<<endl;
 
-  string tit_lst[n_stk][5] = {{"x_{Bj}", "#frac{d#sigma}{dx_{Bj}} (cm^{2}/x_{Bj}/nucleon)", "x_{Bj} of diff E modes", "x_{Bj} of diff E modes", "x_{Bj} of diff E modes"},
-    {"Q^{2}(GeV^{2})", "#frac{d#sigma}{dQ^{2}}(cm^{2}/GeV^{2}/nucleon)", "Q^{2} of diff E modes", "Q^{2} of diff E modes", "Q^{2} of diff E modes"},
-    {"W(GeV)", "#frac{d#sigma}{dW}(cm^{2}/GeV/nucleon)", "W of diff E modes", "W of diff E modes", "W of diff E modes"},
-    {"beamE(GeV)", "#frac{d#sigma}{dE_{nu}}(cm^{2}/GeV/nucleon)", "beamE of diff E modes", "beamE of diff E modes", "beamE of diff E modes"},
+  string tit_lst[n_stk][5] = {{"x_{Bj}", "d#sigma/dx_{Bj} (cm^{2}/x_{Bj}/nucleon)", "x_{Bj} of diff E modes", "x_{Bj} of diff E modes", "x_{Bj} of diff E modes"},
+    {"Q^{2} (GeV^{2})", "d#sigma/dQ^{2}(cm^{2}/GeV^{2}/nucleon)", "Q^{2} of diff E modes", "Q^{2} of diff E modes", "Q^{2} of diff E modes"},
+    {"W (GeV)", "d#sigma/dW(cm^{2}/GeV/nucleon)", "W of diff E modes", "W of diff E modes", "W of diff E modes"},
+    {"E_{#nu} (GeV)", "d#sigma/dE_{#nu}(cm^{2}/GeV/nucleon)", "E_{#nu} of diff E modes", "beamE of diff E modes", "beamE of diff E modes"},
 
-    {"#theta of #mu(degree)", "#frac{d#sigma}{d#theta}(cm^{2}/degree/nucleon)", "#theta of #mu of diff E modes", "#theta of #mu of diff E modes", "#theta of #mu of diff E modes"},
-    {"momentum of #mu(GeV)", "#frac{d#sigma}{dp_{#mu}}(cm^{2}/GeV/nucleon)", "momentum of #mu of diff E modes", "momentum of #mu of diff E modes", "momentum of #mu of diff E modes"},
-    {"#theta of #pi(degree)", "#frac{d#sigma}{d#theta}(cm^{2}/degree/nucleon)", "#theta of #pi of diff E modes", "#theta of #pi of diff E modes", "#theta of #pi of diff E modes"},
-    {"momentum of #pi(GeV)", "#frac{d#sigma}{dp_{#pi}}(cm^{2}/GeV/nucleon)", "momentum of #pi of diff E modes", "momentum of #pi of diff E modes", "momentum of #pi of diff E modes"},
-    {"#theta of recoil(degree)", "#frac{d#sigma}{d#theta}(cm^{2}/degree/nucleon)", "#theta of recoil of diff E modes", "#theta of recoil of diff E modes", "#theta of recoil of diff E modes"},
-    {"momentum of recoil(GeV)", "#frac{d#sigma}{dp_{recoil}}(cm^{2}/GeV/nucleon)", "momentum of recoil of diff E modes", "momentum of recoil of diff E modes", "momentum of recoil of diff E modes"},
-    {"#theta of baryon(degree)", "#frac{d#sigma}{d#theta}(cm^{2}/degree/nucleon)", "#theta of baryon of diff E modes", "#theta of baryon of diff E modes", "#theta of baryon of diff E modes"},
-    {"momentum of baryon(GeV)", "#frac{d#sigma}{dp_{baryon}}(cm^{2}/GeV/nucleon)", "momentum of baryon of diff E modes", "momentum of baryon of diff E modes", "momentum of baryon of diff E modes"},
-    {"p_{n}(GeV)", "#frac{d#sigma}{dp_{n}}(cm^{2}/GeV/nucleon)", "p_{n} of diff E modes", "p_{n} of diff E modes", "p_{n} of diff E modes"},
-    {"dp_{t}(GeV)", "#frac{d#sigma}{dp_{t}}(cm^{2}/GeV/nucleon)", "dpt of diff E modes", "dpt of diff E modes", "dpt of diff E modes"},
-    {"d#phi_{t}(degree)", "#frac{d#sigma}{d#phi_{t}}(cm^{2}/GeV/nucleon)", "dphit of diff E modes", "dphit of diff E modes", "dphit of diff E modes"},
-    {"d#alpha_{t}(degree)", "#frac{d#sigma}{d#alpha_{t}}(cm^{2}/GeV/nucleon)", "dalphat of diff E modes", "dalphat of diff E modes", "dalphat of diff E modes"}};
+    {"#theta of #mu (degree)", "d#sigma/d#theta(cm^{2}/degree/nucleon)", "#theta of #mu of diff E modes", "#theta of #mu of diff E modes", "#theta of #mu of diff E modes"},
+    {"momentum of #mu (GeV)", "d#sigma/dp_{#mu}(cm^{2}/GeV/nucleon)", "p_{#mu} of diff E modes", "momentum of #mu of diff E modes", "momentum of #mu of diff E modes"},
+    {"#theta of #pi (degree)", "d#sigma/d#theta(cm^{2}/degree/nucleon)", "#theta of #pi of diff E modes", "#theta of #pi of diff E modes", "#theta of #pi of diff E modes"},
+    {"momentum of #pi (GeV)", "d#sigma/dp_{#pi}(cm^{2}/GeV/nucleon)", "p_{#pi} of diff E modes", "momentum of #pi of diff E modes", "momentum of #pi of diff E modes"},
+    {"#theta of recoil (degree)", "d#sigma/d#theta(cm^{2}/degree/nucleon)", "#theta of recoil of diff E modes", "#theta of recoil of diff E modes", "#theta of recoil of diff E modes"},
+    {"momentum of recoil (GeV)", "d#sigma/dp_{recoil}(cm^{2}/GeV/nucleon)", "p_{recoil} of diff E modes", "momentum of recoil of diff E modes", "momentum of recoil of diff E modes"},
+    {"#theta of baryon (degree)", "d#sigma/d#theta(cm^{2}/degree/nucleon)", "#theta of baryon of diff E modes", "#theta of baryon of diff E modes", "#theta of baryon of diff E modes"},
+    {"momentum of baryon (GeV)", "d#sigma/dp_{baryon}(cm^{2}/GeV/nucleon)", "p_{baryon} of diff E modes", "momentum of baryon of diff E modes", "momentum of baryon of diff E modes"},
+    {"p_{n} (GeV)", "d#sigma/dp_{n}(cm^{2}/GeV/nucleon)", "p_{n} of diff E modes", "p_{n} of diff E modes", "p_{n} of diff E modes"},
+    {"dp_{T} (GeV)", "d#sigma/dp_{T}(cm^{2}/GeV/nucleon)", "dp_{t} of diff E modes", "dpt of diff E modes", "dpt of diff E modes"},
+    {"d#phi_{T} (degree)", "d#sigma/d#phi_{T}(cm^{2}/degree/nucleon)", "d#phi_{t} of diff E modes", "dphit of diff E modes", "dphit of diff E modes"},
+    {"#delta#alpha_{T} (degree)", "d#sigma/d#delta#alpha_{T} (cm^{2}/degree/nucleon)", "d#alpha_{t} of diff E modes", "dalphat of diff E modes", "dalphat of diff E modes"}};
 
   
+  //TLatex latex;
 
   for(int ii=0; ii<n_stk; ii++)
   {
     //cout<<"test for loop ii : "<<ii<<endl;
+    style::ResetStyle(& stk_lst[ii]);
     stk_lst[ii].Draw(opt_smooth);
+    
     stk_lst[ii].GetXaxis()->SetTitle(tit_lst[ii][0].c_str());
+    stk_lst[ii].GetXaxis()->SetTitleSize(0.055);
+    stk_lst[ii].GetXaxis()->CenterTitle(true);
+    stk_lst[ii].GetXaxis()->SetTitleOffset(1.1);
+
     stk_lst[ii].GetYaxis()->SetTitle(tit_lst[ii][1].c_str());
+    stk_lst[ii].GetYaxis()->SetTitleSize(0.055);
+    stk_lst[ii].GetYaxis()->CenterTitle(true);
+    stk_lst[ii].GetYaxis()->SetTitleOffset(1);
+
     stk_lst[ii].SetTitle(tit_lst[ii][2].c_str());
     gStyle->SetTitleX(0.5);
     gStyle->SetPadRightMargin(0.1);
     gStyle->SetPadLeftMargin(0.1);
+    gStyle->SetPadBottomMargin(0.5);
+    style::ResetStyle(& leg_lst[ii]);
+    /*
+    TString header_string = "#splitline{nuSTORM Preliminary (2501v1)}{{GiBUU ND-GAr "+nu_mode;//+" {}^{40}Ar -> #mu^{-}p}{stored p_{#mu}(GeV/c)}}";#splitline
+    if(nu_mode == "#nu_{#mu}"){header_string = header_string + "{}^{40}Ar #rightarrow #mu^{-}p}{Stored #it{p}_{#mu}(GeV/#it{c}) #pm16%}}";}
+    else{header_string = header_string + "{}^{40}Ar #rightarrow e^{-}p}{Stored #it{p}_{#mu}(GeV/#it{c}) #pm16%}}";}
+    */
+    TString header_string = "#splitline{nuSTORM Preliminary (2501v1)}{#splitline{GiBUU ND-GAr  "+nu_mode;
+    if(nu_mode == "#nu_{#mu}"){header_string = header_string + " {}^{40}Ar#rightarrow#mu^{-}p}{Stored #it{p}_{#mu}(GeV/#it{c}) #pm16%}}";}
+    else{header_string = header_string + " {}^{40}Ar#rightarrowe^{-}p}{Stored #it{p}_{#mu}(GeV/#it{c})  #pm16%}}";}
+    //#splitline{nuSTORM Preliminary (2501v1)}{#splitline{GiBUU ND-GAr #nu_{#mu}{}^{40}Ar #rightarrow #mu^{-}p}{Stored #it{p}_{#mu}(GeV/#it{c}) #pm16%}}
+    
+    leg_lst[ii].SetHeader(header_string);
+    leg_lst[ii].SetTextAlign(12);
+    leg_lst[ii].SetTextSize(0.03);
+    leg_lst[ii].SetMargin(0.15);
+    //leg_lst[ii].SetEntrySeparation(-0.01);
     leg_lst[ii].Draw();
+    //latex.SetTextSize(0.1);
+    //latex.SetTextAlign(13);  //align at top
+    //latex.DrawLatex(0.15,0.9,header_string);
+    //latex.Draw();
     c1->Print(pdf_out_name,tit_lst[ii][3].c_str());
     c1->Print(Form("png/%s_%s.png", anatag, tit_lst[ii][4].c_str()));
 
@@ -882,8 +1016,8 @@ void hist_nuSTORM_musig_GiBUU_v4_arg(TString E3_fn, TString E4_fn, TString E5_fn
 int main(int argc, char* argv[])
 {
   //void anaGenerator(const TString tag, const TString filelist, const int tmpana, const int nToStop=-999, const int smearBit=0)
-  if(argc==12){
-    hist_nuSTORM_musig_GiBUU_v4_arg(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8], argv[9], argv[10], argv[11]);
+  if(argc==14){
+    hist_nuSTORM_musig_GiBUU_v4_arg(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8], argv[9], argv[10], argv[11], argv[12], argv[13]);
   }
   else{
     printf("wrong argc %d\n", argc); return 1;

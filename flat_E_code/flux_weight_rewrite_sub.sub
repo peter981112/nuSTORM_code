@@ -1,0 +1,20 @@
+Executable = do_weight_rewrite.sh
+Universe = vanilla
+
+Log = output/flux_weight_rewrite_sub.log
+error = output/flux_weight_rewrite_sub.err
+output = output/flux_weight_rewrite_sub.out
+
+#LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}
+transfer_input_files   =  flat_E_test.txt, export_lib_path.sh, flat_E_source/, weight_rewrite_arg, /opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/include, /opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/style, /opt/ppd/scratch/nustorm/GiBUU_2024/NuGenTKI/bin
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+request_cpus   = 1
+request_memory = 1.5 GB
+#request_disk   = 100 GB
+requirements = (Opsys =?= "LINUX") && (OpSysAndVer =?= "Rocky9")
+
+arguments = $(flat_E_flux_file_name) $(flux_file_name) $(rootfile) $(logoutput)
+
+queue flat_E_flux_file_name, flux_file_name, rootfile, logoutput from flux_weight_rewrite_condor_arg.txt

@@ -110,11 +110,36 @@ vector<array<double,2>> read_flux_file(string flux_file) //read text file and re
   return target_flux_vect;
 }
 
+double get_hist_norm_per_nucleon(TString fn)
+{
+  TFile *f = new TFile(fn);
+  TTree * theader = (TTree*) f->Get("header");
+
+  double GiBUUnormFactor=-999;
+  if(theader)
+  {
+    int tmpanr;
+    theader->SetBranchAddress("nrun", &tmpanr);
+    theader->GetEntry(0);
+    if(tmpanr>0){
+      GiBUUnormFactor=tmpanr;
+    }
+  }
+  cout<<"=================================================getting norm factor for xsec================================================="<<endl;
+  cout<<"nrun for file - "<<fn<<" is : "<<GiBUUnormFactor<<endl;
+  GiBUUnormFactor = GiBUUnormFactor*1e38;
+  cout<<" norm factor per nucleon : "<<GiBUUnormFactor<<endl;
+
+  return GiBUUnormFactor;
+}
+
 void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
 {
 
-  vector<array<double,2>> target_flux_vect = read_flux_file(flux_file); //energy distribution file in txt
-  vector<array<double,2>> flat_E_flux_vect = read_flux_file(flat_E_flux_file); //flat energy distribution file in txt
+  //string flat_E_flux_file = "flat_E_test.txt";
+  //string flux_file_E7 = "E7SpectraMuSig556Numu.txt";
+  vector<array<double,2>> target_flux_vect = read_flux_file(flux_file);
+  vector<array<double,2>> flat_E_flux_vect = read_flux_file(flat_E_flux_file);
 
   vector<array<double,2>> weight_lst = get_flux_weight_lst(target_flux_vect, flat_E_flux_vect);
 
@@ -123,7 +148,7 @@ void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
   cout<<"weight integral : "<<test_weight_int<<endl;
 
 
-  int anaid{0};auto anatag{"outana"};string fn_string{fn};string flux_file_no_txt{flux_file};TString fout_name{""};//int noff;
+  int anaid{0};auto anatag{"outana"};string fn_string{fn};string path_string{fn};string flux_file_no_txt{flux_file};TString fout_name{""};//int noff;
 
   if(fn.Contains("outAna7")){
     anaid = 2;
@@ -144,22 +169,44 @@ void weight_rewrite(string flat_E_flux_file, string flux_file, TString fn)
   cout<<"fn_string : "<<fn_string<<endl;
   size_t slash_index = fn_string.find("/");
   fn_string.erase(fn_string.begin(), fn_string.begin()+slash_index+1);//remove file path and extention .root from the file name
-  slash_index = fn_string.find("/");
-  fn_string.erase(fn_string.begin(), fn_string.begin()+slash_index+1);//remove file path and extention .root from the file name
+  while (true)
+  {
+    if(fn_string.find("/") != fn_string.npos)
+    {
+      slash_index = fn_string.find("/");
+      fn_string.erase(fn_string.begin(), fn_string.begin()+slash_index+1);//remove file path and extention .root from the file name
+    }
+    else{break;}
+  }
   cout<<"fn_string : "<<fn_string<<endl;
 
   cout<<"flux_file_no_txt : "<<flux_file_no_txt<<endl;
   dot_index = flux_file_no_txt.find(".");
   flux_file_no_txt.erase(flux_file_no_txt.begin() + dot_index, flux_file_no_txt.end());//remove extention .txt from the file name
   cout<<"flux_file_no_txt : "<<flux_file_no_txt<<endl;
-  slash_index = flux_file_no_txt.find("/");
-  flux_file_no_txt.erase(flux_file_no_txt.begin(), flux_file_no_txt.begin()+slash_index+1);//remove file path and extention .txt from the file name
-  cout<<"flux_file_no_txt : "<<flux_file_no_txt<<endl;
+  while (true)
+  {
+    if(flux_file_no_txt.find("/") != flux_file_no_txt.npos)
+    {
+      slash_index = flux_file_no_txt.find("/");
+      flux_file_no_txt.erase(flux_file_no_txt.begin(), flux_file_no_txt.begin()+slash_index+1);//remove file path and extention .txt from the file name
+    }
+    else{break;}
+  }
+
+  cout<<"path_string : "<<path_string<<endl;
+  for (int i=0; i<3; i++)
+  {
+    slash_index = path_string.rfind("/");
+    path_string.erase(path_string.begin() + slash_index, path_string.end());
+  }
+
+
 
   string destination_folder{"root_target/"}; string imitate{"_imitate"};
 
-  fout_name = destination_folder + flux_file_no_txt + "_" + fn_string + imitate + ".root";
-  cout<<"fn_string : "<<fn_string<<endl<<"flux_file_no_txt : "<<flux_file_no_txt<<endl<<"name of fout : "<<fout_name<<endl;
+  fout_name = path_string + "/" + destination_folder + flux_file_no_txt + "_" + fn_string + imitate + ".root";
+  cout<<"fn_string : "<<fn_string<<endl<<"flux_file_no_txt : "<<flux_file_no_txt<<endl<<"path_string : "<<path_string<<endl<<"name of fout : "<<fout_name<<endl;
    /*
   TString fn_lst = outAna9_MINERvALE_GiBUU_test_GFS0PIa9nuC_Filelist_GiBUUMINERvALE_nu_T0_Carbon.root";
   int anaid{1};
