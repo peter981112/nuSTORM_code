@@ -1,0 +1,144 @@
+!Drifts: distances between each element
+!driftname: drift, l=length*m;
+
+o1: drift, l=1.0*m;
+o2: drift, l=1.2*m;
+o3: drift, l=0.95*m;
+o4: drift, l=0.95*m;
+o5: drift, l=1.2*m;
+o6: drift, l=0.5*m;
+
+d1: drift, l=1800*mm;
+d2: drift, l=250*mm;
+d3: drift, l=750*mm;
+d4: drift, l=2000*mm;
+d5: drift, l=2000*mm;
+d6: drift, l=200*mm;
+d7: drift, l=800*mm;
+
+d8: drift, l=300*mm;
+d9: drift, l=1400*mm;
+d10: drift, l=500*mm;
+d11: drift, l=2900*mm;
+d12: drift, l=300*mm;
+d13: drift, l=100*mm;
+d14: drift, l=900*mm;
+d15: drift, l=887*mm;
+d16: drift, l=2000*mm;
+d16a: drift, l=500*mm;
+d16b: drift, l=500*mm;
+d17: drift, l=474.2*mm;
+d18: drift, l=460.9*mm;
+d19: drift, l=3539.4*mm;
+d19a: drift, l=500*mm;
+d19b: drift, l=2039.4*mm;
+d20: drift, l=2308.2*mm;
+d21: drift, l=409.5*mm;
+d22: drift, l=400*mm;
+d23: drift, l=1100*mm;
+d24: drift, l=4073*mm;
+d24a: drift, l=2573*mm;
+d24b: drift, l=500*mm;
+d25: drift, l=200*mm;
+d26: drift, l=193.415*mm;
+d27: drift, l=200.05*mm;
+d28: drift, l=200.05*mm;
+d29: drift, l=193.415*mm;
+d30: drift, l=200*mm;
+d31: drift, l=16.413*m;
+d31a: drift, l=14.413*m;
+d31b: drift, l=1*m;
+d32: drift, l=0.2*m;
+d33: drift, l=0.52*m;
+d34: drift, l=0.2*m;
+d35: drift, l=12.34*m;
+d35a: drift, l=10.34*m;
+dOCS: drift, l=24.383*m, aper1=2*m;
+dHorn: drift, l=1*m, beampipeThickness=0.05*m, aper1 =0.1*m, aper2=0.5*m;
+
+c1: drift, l=100*cm;
+c2: drift, l=100*cm;
+c3: drift, l=100*cm;
+
+
+!PoSEnd: marker;
+
+!Quadrupoles. Each Quad is labelled in the same way as G4Beamline
+!quad-name: quadrupole, l=length*m, k1="quadrupole Coefficient in m^-2", magnetGeometeryType="preferred geometry type";
+
+q1: quadrupole, l=1*m, k1=-0.253169, magnetGeometryType="polesfacet", aper1=300*mm;
+q2: quadrupole, l=1*m, k1=0.350557, magnetGeometryType="polesfacet", aper1=350*mm;
+q3: quadrupole, l=1*m, k1=-0.359935, magnetGeometryType="polesfacet", aper1=300*mm;
+q4: quadrupole, l=1*m, k1=0.2617, magnetGeometryType="polesfacet", aper1=300*mm;
+
+qn1:  quadrupole, l=1.5*m, k1=-0.163625, magnetGeometryType="polesfacet", aper1=300*mm;
+qn2: quadrupole, l=1.5*m, k1=0.250935, magnetGeometryType="polesfacet", aper1=300*mm;
+qn3: quadrupole, l=2.0*m, k1=-0.315456, magnetGeometryType="polesfacet", aper1=300*mm;
+qn4: quadrupole, l=1.5*m, k1=0.331442, magnetGeometryType="polesfacet", aper1=300*mm;
+qn5: quadrupole, l=1.5*m, k1=-0.163199, magnetGeometryType="polesfacet", aper1=300*mm;
+qd: quadrupole, l=1*m, k1=-0.281051874188, magnetGeometryType="polesfacet", aper1=300*mm;
+qf: quadrupole, l=1*m, k1=0.422969646651, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q7: quadrupole, l=1*m, k1=0.398589934997, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q6: quadrupole, l=1*m, k1=-0.340795910658, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q5: quadrupole, l=0.7079*m, k1=0.7848, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q4: quadrupole, l=0.6192*m, k1=-0.7751408676187003, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q3: quadrupole, l=0.5528*m, k1=-0.11709478295287673, magnetGeometryType="polesfacet", aper1=300*mm;
+rm_q2: quadrupole, l=1.2513*m, k1=0.25001290918324937, magnetGeometryType="polesfacet", aper1=320*mm;
+rm_q1: quadrupole, l=0.5846*m, k1=-0.2588355193227943, magnetGeometryType="polesfacet", aper1=300*mm;
+OCS_qf: quadrupole, l=0.5*m, k1=0.19795, magnetGeometryType="polesfacet", aper1=361*mm;
+OCS_qd: quadrupole, l=1*m, k1=-0.15425, magnetGeometryType="polesfacet",aper1=375*mm;
+dec_qf: quadrupole, l=1.1*m, k1=-0.109945, magnetGeometryType="polesfacet", aper1=317*mm;
+dec_qd: quadrupole, l=1.1*m, k1=0.107776, magnetGeometryType="polesfacet", aper1=317*mm;
+
+
+!Sector Bends
+!bend-name: sbend, l=length*m, angle="angle of deviation"; 
+
+s_dba_dp: sbend, l=200*cm, angle=0.1;
+s_rm_dp_2: sbend, l=250*cm, angle=0.09496865082224923;
+s_rm_dp_1: sbend, l=250*cm, angle=0.30271485035639906;
+s_inj_sep: sbend, l=250*cm, angle=-0.305;
+s_OCS_1: sbend, l=220.9181294268649*cm, angle=0.174176493209759;
+s_OCS_2: sbend, l=90.005*cm, angle=-0.1;
+
+
+option, aper1=700*mm, !aperture size throughout the whole beam unless specified in individual component
+	horizontalWidth=1.5*m, !horizontal width of the elements (made bigger to allow a large beam aperture)
+	beampipeThickness=2*mm; !thickness of the beampipe
+
+
+!Beam Lines
+!beam-line-name: line =(element1, drift1, element2, drift 2);
+!multiple lines can use the same elements
+
+
+l1c: line = (d1, q1, d2, c1, d3, q2, d4, q3, d5, q4, d6, c2, d7, s_dba_dp, d8, qd, d9, c3, d10, qf, d11, qd, d12, s_dba_dp, d13, c2, d14, rm_q7, d15, rm_q6, d16a, c1, d16b, s_rm_dp_2, d17, rm_q5, d18, rm_q4, d19a, c1, d19b, rm_q3, d20, rm_q2, d21, s_rm_dp_1, d22, rm_q1, d23, s_inj_sep, d24a, c3, d24b, OCS_qf, d25, s_OCS_1, d26, s_OCS_2, d27, OCS_qd, d28, s_OCS_2, d29, s_OCS_1, d30, OCS_qf, d31a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35, d35a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35, d35a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35, d35a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35, d35a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35, d35a, c3, d31b, dec_qf, d32, dec_qd, d33, dec_qd, d34, dec_qf, d35);
+
+
+use, period=l1c; !Choose the beamline you wish to use
+sample, all; !Virtual detectors before and after every element in analysis
+option, ngenerate=1,
+	minimumKineticEnergy=50*keV,
+!       beamPipeIsInfiniteAbsorber=1,           !new, kill particles that hit the beam pipe - testing, 6/12/23
+        storeSamplerKineticEnergy=1,
+        storeApertureImpactsAll=1,              !new, store all particle aperture hits, not only primary particles
+	physicsList="em decay muon";            !change the physics you wish to use
+        !stopSecondaries=1;                     !Comment if you want to allow secondary particles through
+	
+
+
+!Particle beam parameters
+
+!beam, 	particle="pi+",
+!	energy=5.002*GeV,
+!	distrType="userfile",
+!	distrFile="/vols/ccap/users/tta20/tta20/Fluka_5GeV.txt",
+!	distrFileFormat="x[m]:y[m]:z[m]:xp[rad]:yp[rad]:E[GeV]:t[s]";
+
+beam,   particle="pi+",
+        energy=5.002*GeV,
+        distrType="userfile",
+        distrFile="/vols/mice/pbj13/nuSTORM/BDSIM/selected_pions_5GeV_2.0mm.txt",
+        distrFileFormat="x[cm]:y[cm]:-:-:-:-:xp[rad]:yp[rad]:E[GeV]";
+
+

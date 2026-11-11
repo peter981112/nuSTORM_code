@@ -1,0 +1,192 @@
+Stage,Section,Element,Type,Parameter,Value,Unit,Comment
+0,Facility,Global,Name,Name,nuSTORM,,
+0,Facility,Global,Reference particle,Kinetic energy,4000,MeV,
+0,Facility,Global,Vacuum chamber,Mother volume radius,0.5,m,
+1,Source,Source,Parameterised TNSA,SourceMode,1,,Gaussian kinetic energy
+1,Source,Source,Parameterised TNSA,SigmaX,0.000004,m,"Gaussian width, x"
+1,Source,Source,Parameterised TNSA,SigmaY,0.000004,m,"Gaussian width, y"
+1,Source,Source,Parameterised TNSA,MeanEnergy,4000,MeV,Mean of guassian kinetic energy
+1,Source,Source,Parameterised TNSA,SigmaEnergy,500,MeV,Sigma of guassian kinetic energy
+1,Source,Source,Parameterised TNSA,MinCTheta,0.998,,Minimum theta for flat cos theta
+1,ProductionStraight,Drift,,Length,1.8,m,"d1"
+1,ProductionStraight,Dquad,,Length,1,m,"q1"
+1,ProductionStraight,Dquad,,kq,0.253169,m-2,
+1,ProductionStraight,Drift,,Length,0.25,m,"d2"
+1,ProductionStraight,Drift,,Length,1.0,m,"c1"
+1,ProductionStraight,Drift,,Length,0.75,m,"d3"
+1,ProductionStraight,Fquad,,Length,1,m,"q2"
+1,ProductionStraight,Fquad,,kq,0.350557,m-2,
+1,ProductionStraight,Drift,,Length,2.0,m,"d4"
+1,ProductionStraight,Dquad,,Length,1,m,"q3"
+1,ProductionStraight,Dquad,,kq,0.359935,m-2,
+1,ProductionStraight,Drift,,Length,2.0,m,"d5"
+1,ProductionStraight,Fquad,,Length,1,m,"q4"
+1,ProductionStraight,Fquad,,kq,0.350557,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d6"
+1,ProductionStraight,Drift,,Length,1.0,m,"c2"
+1,ProductionStraight,Drift,,Length,0.8,m,"d7"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.0,m,"s_dba_dp"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.1,degrees,
+1,ProductionStraight,Drift,,Length,0.3,m,"d8"
+1,ProductionStraight,Dquad,,Length,1,m,"qd"
+1,ProductionStraight,Dquad,,kq,0.281051874188,m-2,
+1,ProductionStraight,Drift,,Length,1.4,m,"d9"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,0.5,m,"d10"
+1,ProductionStraight,Fquad,,Length,1,m,"qf"
+1,ProductionStraight,Fquad,,kq,0.422969646651,m-2,
+1,ProductionStraight,Drift,,Length,2.9,m,"d11"
+1,ProductionStraight,Dquad,,Length,1,m,"qd"
+1,ProductionStraight,Dquad,,kq,0.281051874188,m-2,
+1,ProductionStraight,Drift,,Length,0.3,m,"d12"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.0,m,"s_dba_dp"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.1,degrees,
+1,ProductionStraight,Drift,,Length,0.1,m,"d13"
+1,ProductionStraight,Drift,,Length,1.0,m,"c2"
+1,ProductionStraight,Drift,,Length,0.9,m,"d14"
+1,ProductionStraight,Fquad,,Length,1,m,"rm_q7"
+1,ProductionStraight,Fquad,,kq,0.398589934997,m-2,
+1,ProductionStraight,Drift,,Length,0.887,m,"d15"
+1,ProductionStraight,Dquad,,Length,1,m,"rm_q6"
+1,ProductionStraight,Dquad,,kq,0.340795910658,m-2,
+1,ProductionStraight,Drift,,Length,0.5,m,"d16a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c1"
+1,ProductionStraight,Drift,,Length,0.5,m,"d16b"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.5,m,"s_rm_dp_2"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.09496865082224923,degrees,
+1,ProductionStraight,Drift,,Length,0.4742,m,"d17"
+1,ProductionStraight,Fquad,,Length,0.7079,m,"rm_q5"
+1,ProductionStraight,Fquad,,kq,0.7848,m-2,
+1,ProductionStraight,Drift,,Length,0.4609,m,"d18"
+1,ProductionStraight,Dquad,,Length,0.6192,m,"rm_q4"
+1,ProductionStraight,Dquad,,kq,0.7751408676187003,m-2,
+1,ProductionStraight,Drift,,Length,0.5,m,"d19a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c1"
+1,ProductionStraight,Drift,,Length,2.0394,m,"d19b"
+1,ProductionStraight,Dquad,,Length,0.5528,m,"rm_q3"
+1,ProductionStraight,Dquad,,kq,0.11709478295287673,m-2,
+1,ProductionStraight,Drift,,Length,2.3082,m,"d20"
+1,ProductionStraight,Fquad,,Length,1.2513,m,"rm_q2"
+1,ProductionStraight,Fquad,,kq,0.25001290918324937,m-2,
+1,ProductionStraight,Drift,,Length,0.4095,m,"d21"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.5,m,"s_rm_dp_1"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.30271485035639906,degrees,
+1,ProductionStraight,Drift,,Length,0.4,m,"d22"
+1,ProductionStraight,Dquad,,Length,0.5846,m,"rm_q1"
+1,ProductionStraight,Dquad,,kq,0.2588355193227943,m-2,
+1,ProductionStraight,Drift,,Length,1.1,m,"d23"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.5,m,"s_inj_sep"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,-0.305,degrees,
+1,ProductionStraight,Drift,,Length,2.573,m,"d24a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,0.5,m,"d24b"
+1,ProductionStraight,Fquad,,Length,0.5,m,"OCS_qf"
+1,ProductionStraight,Fquad,,kq,0.19795,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d25"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.209181294268649,m,"s_OCS_1"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.174176493209759,degrees,
+1,ProductionStraight,Drift,,Length,0.193415,m,"d26"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,0.9000499999999999,m,"s_OCS_2"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,-0.1,degrees,
+1,ProductionStraight,Drift,,Length,0.20005,m,"d27"
+1,ProductionStraight,Dquad,,Length,1,m,"OCS_qd"
+1,ProductionStraight,Dquad,,kq,0.15425,m-2,
+1,ProductionStraight,Drift,,Length,0.20005,m,"d28"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,0.9000499999999999,m,"s_OCS_2"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,-0.1,degrees,
+1,ProductionStraight,Drift,,Length,0.193415,m,"d29"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Length,2.209181294268649,m,"s_OCS_1"
+1,ProductionStraight,Dipole,"Sector (Length, angle)",Angle,0.174176493209759,degrees,
+1,ProductionStraight,Drift,,Length,0.2,m,"d30"
+1,ProductionStraight,Fquad,,Length,0.5,m,"OCS_qf"
+1,ProductionStraight,Fquad,,kq,0.19795,m-2,
+1,ProductionStraight,Drift,,Length,14.413,m,"d31a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"
+1,ProductionStraight,Drift,,Length,10.34,m,"d35a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"
+1,ProductionStraight,Drift,,Length,10.34,m,"d35a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"
+1,ProductionStraight,Drift,,Length,10.34,m,"d35a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"
+1,ProductionStraight,Drift,,Length,10.34,m,"d35a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"
+1,ProductionStraight,Drift,,Length,10.34,m,"d35a"
+1,ProductionStraight,Drift,,Length,1.0,m,"c3"
+1,ProductionStraight,Drift,,Length,1.0,m,"d31b"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d32"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.52,m,"d33"
+1,ProductionStraight,Fquad,,Length,1.1,m,"dec_qd"
+1,ProductionStraight,Fquad,,kq,0.107776,m-2,
+1,ProductionStraight,Drift,,Length,0.2,m,"d34"
+1,ProductionStraight,Dquad,,Length,1.1,m,"dec_qf"
+1,ProductionStraight,Dquad,,kq,0.109945,m-2,
+1,ProductionStraight,Drift,,Length,12.34,m,"d35"

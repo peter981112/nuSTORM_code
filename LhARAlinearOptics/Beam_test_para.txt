@@ -1,0 +1,8 @@
+pion 5000 MeV
+139.57061 1 //object rest mass [MeV.c-2], and charge [q.C]
+4 //number of keywords to be read
+singlepart 5.e9 // Ekin [eV]
+98.0493 0 0 // x [m], y [m], z [m] (x:horiz, y:longit, z:verti)
+3.7 0. // atan dxdy deg [deg.], atan dzdy deg [deg.]
+putonco-nelmin xxp 1.e-6 1.e-4
+putonco-xxp 1.e-10 // absolute precision is given in [m]

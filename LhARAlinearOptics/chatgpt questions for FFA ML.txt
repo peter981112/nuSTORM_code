@@ -1,0 +1,93 @@
+chatgpt questions for FFA ML
+
+What kind of architecture do I use when I am trying to use machine learning to simulate particle trajectory at next step with tensorflow?
+
+For the same problem as above if I have additional parameters to consider how should I change the architecture?
+
+Continue from above, what should I do if particles could be lost during the simulation process and I would like to add a binary classifier to the output as well?
+
+Can you give me a code example for the above case?
+
+======================================================================================
+chatgpt questions about RNN
+
+how can I use stacked RNN in tensorflow?
+
+Is it possible to implement a multi layer perceptron with multiple inputs and outputs to a RNN in tensorflow?
+
+In tensorflow what does LSTM and simpleRNN layers do?
+
+In tensorflow what does the number insdoe LSTM represent?
+
+So does LSTM(10) mean this layer keeps information of 10 steps?
+
+Then how exactly does LSTM handle stored internal data differently from a simpleRNN layer?
+
+I would like to see a concrete 3-timestep example with actual numbers , showing exactly how SimpleRNN and LSTM update their internal states at each step.
+
+When I want to implement a multi layer perceptron with multiple inputs and outputs to a RNN in tensorflow and if some of the inputs are variables that should not change over steps how should I construct the model?
+======================================================================================
+chatgpt questions about transfer matrix ML
+
+I am trying to use machine learning to simulate particle trajectory at the next step with tensorflow. I would like to train the model so I could get a transfer matrix as output that would take variables that describe the field while optimizing with given particle data at before and after the step. How can I do this?
+
+In my case I am using 6D accelerator coordinates and using 17 parameters to describe the field and 3 for particle data that does not change over steps. I would like the model to only take field parameters as input and look at the particle data through the loss function but if you have a better suggestion I will accept it as long as the model only takes field parameter as input. Can you give me an example and explanation in this case?
+
+what does tf.einsum do in your example?
+
+How is the call(self, field) function used in the example? I don't see it being directly used to transfer the 36 output into a 6x6 matrix.
+
+I don't want every particle having different transfer matrices. In may case the training data has couple of field parameters and there are many particles for each field parameter setting. I would like the model to have the same transfer matrix for a certain field parameters setting since when I predict the transfer matrix with my model in the later stage I just want one transfer matrix for the field setting. Can you make an upgrade to the example to deal with this kind of data structure?
+
+How can I change the code to save information into a history like history = model.fit?
+
+I have lost particles in my training data. I don't want the model to look at these particles. How can I assign weights to the training data so that lost particles have weight of 0 when training?
+
+The particles in my case should have constant energy. Due to this I want the transfer matrix's last row and column to be constant. How can I change the code so that the output gives for example 25 outputs for a 5x5 matrix and fix the other numbers as a constant?
+
+I think I want only the last row to be [0, 0, 0, 0, 0, 1] for the energy conservation. Can you fix the example according to this so it would only replace the last row?
+
+I would also like to predict the residual values instead of raw values. The method I would like to use is to predifine a base matrix, which in this case would be an identity matrix and predict M-I instead of M if M is the transfer matrix. I would like to use this becuase in the future I would like to use diferent transfer matrices as the base matrix. Could you give me an example for this? 
+
+======================================================================================
+how is accuracy determined in tensorflow?
+
+What if I am not doing a binary classification and my model is suppose to give a floating point number?
+
+What is the default method for tensorflow to calculate accuracy then?
+
+This is my model.compile : model_sep_in_out.compile(
+    optimizer=tf.keras.optimizers.Adam(1e-3),
+
+    loss={
+        "phase_space_output": tf.keras.losses.Huber(),
+        "survival_output": tf.keras.losses.BinaryCrossentropy()
+    },
+
+    loss_weights={
+        "phase_space_output": 1.0,
+        "survival_output": 0.3
+    },
+
+    weighted_metrics={
+        "phase_space_output": ["accuracy"],#mae
+        "survival_output": ["accuracy"]
+    }
+)
+
+model_sep_in_out.summary()
+
+Shape of phase_space_output is (23437, 6) and one example of y_true/y_pred is, y_true : [-1.383964    0.          0.04965096 -0.1010709   0.9948715   0.00391276], and y_pred : [-1.1558326  -0.01685301  0.02231652 -0.10435043  1.0153987  -0.0357289 ]
+
+In that case what is the point of having both a loss function and a emtric?
+
+In that case does the model does not care about the metric while training?
+
+Returning to something I you said before, my outputs have very different scales. How should I cope with this problem?
+
+
+======================================================================================
+chatgpt questions for FFA ML with RNN
+
+How could I use RNN when I am trying to use machine learning to simulate particle trajectory at next step with tensorflow?
+
